@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aid choice sprint</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Aid choice sprint</h1>
+<p class="sub">For each line, tap <strong>Smart move</strong> if it helps you get affordable aid, or <strong>Risky move</strong> if it could cost you more or shrink options. Works with mouse or touch — no keyboard maze.</p>
+<div class="score" id="sc"></div>
+<div class="card" style="margin-top:8px">
+  <p id="prompt" style="font-size:1rem;line-height:1.5;margin:0;min-height:3.2em"></p>
+  <div class="row" style="gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+    <button type="button" class="btn btn-good" id="btnSmart">Smart move ✓</button>
+    <button type="button" class="btn btn-bad" id="btnRisky">Risky move ✗</button>
+  </div>
+</div>
+<p class="coop-hint" id="hint" style="margin-top:10px"></p>
+<div class="feedback hidden" id="fb"></div>
+<script>
+(function(){
+const rounds=[
+  {t:"File the FAFSA as soon as it opens — even if you think you won’t qualify.",good:true},
+  {t:"Skip the FAFSA and only apply for private loans first.",good:false},
+  {t:"Accept a federal subsidized loan offer before high-interest private loans.",good:true},
+  {t:"Put tuition on a credit card to earn points, planning to pay it off someday.",good:false},
+  {t:"Read the financial aid letter: separate grants from loans and note net price.",good:true},
+  {t:"Sign the first loan document without comparing APR, fees, or repayment options.",good:false},
+  {t:"Search and apply for school and outside scholarships all year.",good:true},
+  {t:"Ignore emails from your school bursar about verification or deadlines.",good:false}
+];
+let i=0,score=0,done=false;
+const sc=document.getElementById("sc");
+const promptEl=document.getElementById("prompt");
+const hint=document.getElementById("hint");
+const fb=document.getElementById("fb");
+const bS=document.getElementById("btnSmart");
+const bR=document.getElementById("btnRisky");
+
+function paint(){
+  if(done)return;
+  sc.textContent="Round "+(i+1)+" / "+rounds.length+" · Score "+score;
+  promptEl.textContent=rounds[i].t;
+  hint.textContent="";
+  fb.classList.add("hidden");
+  bS.disabled=false;bR.disabled=false;
+}
+
+function answer(pickedSmart){
+  if(done)return;
+  bS.disabled=true;bR.disabled=true;
+  const ok=(pickedSmart===rounds[i].good);
+  if(ok)score++;
+  hint.textContent=ok?"Nice — that protects options and cost.":(rounds[i].good?"That one was a smart move — grants and federal aid first.":"Right — that path often gets expensive fast.");
+  hint.style.color=ok?"var(--green)":"var(--slate)";
+  i++;
+  if(i>=rounds.length){
+    done=true;
+    fb.classList.remove("hidden","bad");
+    fb.classList.add("good");
+    fb.textContent="Finished! Score "+score+" / "+rounds.length+". Remember: gift aid and FAFSA early, compare loan terms, and read every award letter.";
+    sc.textContent="Done · "+score+" / "+rounds.length+" correct";
+    return;
+  }
+  setTimeout(paint,650);
+}
+
+bS.onclick=()=>answer(true);
+bR.onclick=()=>answer(false);
+paint();
+})();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

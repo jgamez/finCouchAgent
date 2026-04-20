@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three doors</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Open a door</h1><p class="sub">Flip a door, then pick the best real strategy for the prompt.</p>
+<div class="score" id="pr"></div>
+<div class="door-row" id="doors"></div>
+<div class="row" style="justify-content:center;margin-top:8px"><button class="btn btn-outline" id="av">Choose Avalanche</button>
+<button class="btn btn-outline" id="sn">Choose Snowball</button><button class="btn btn-outline" id="no">Choose “Bad idea”</button></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const rounds=[
+{t:"Pay highest APR first while paying minimums elsewhere",ok:"av"},
+{t:"Smallest balance first for quick wins",ok:"sn"},
+{t:"Ignore bills until you feel like it",ok:"no"}];
+const labels=["Avalanche","Snowball","Bad idea"];let ri=0,score=0;
+function doors(){document.getElementById('pr').textContent=rounds[ri].t;
+document.getElementById('doors').innerHTML=labels.map((L,i)=>'<div class="door" data-i="'+i+'"><div class="door-inner"><div class="door-face door-front">?</div><div class="door-face door-back">'+L+'</div></div></div>').join('');
+[...document.querySelectorAll('.door')].forEach(d=>d.onclick=()=>d.classList.toggle('flipped'));}
+function pick(id){const ok=rounds[ri].ok===id;const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add(ok?'good':'bad');
+if(ok)score++;fb.textContent=ok?'Yes!':'Review avalanche vs snowball — both can work; ignoring bills does not.';
+ri++;if(ri>=rounds.length){fb.textContent='Finished — '+score+'/'+rounds.length+' correct.';['av','sn','no'].forEach(x=>document.getElementById(x).disabled=true);return;}
+doors();}
+document.getElementById('av').onclick=()=>pick('av');
+document.getElementById('sn').onclick=()=>pick('sn');
+document.getElementById('no').onclick=()=>pick('no');
+doors();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

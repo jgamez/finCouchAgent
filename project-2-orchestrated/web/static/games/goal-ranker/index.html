@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Podium drag</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Build the podium</h1><p class="sub">Drag tiles onto 🥇 🥈 🥉 slots — most urgent first.</p>
+<div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:8px">
+<div class="drop-bin" id="p0" style="min-height:76px;flex:1"><h3>🥇 1st</h3></div>
+<div class="drop-bin" id="p1" style="min-height:76px;flex:1"><h3>🥈 2nd</h3></div>
+<div class="drop-bin" id="p2" style="min-height:76px;flex:1"><h3>🥉 3rd</h3></div>
+</div>
+<div class="chip-tray" id="tray"></div>
+<button class="btn btn-primary" id="go">Score podium</button>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const goals=["Past-due bill","Starter emergency fund","401(k) match","Vacation"];const ideal=["Past-due bill","Starter emergency fund","401(k) match"];
+const heads=["🥇 1st","🥈 2nd","🥉 3rd"];let slots=["","",""];let pool=goals.slice().sort(()=>Math.random()-.5);
+function tray(){const t=document.getElementById('tray');t.innerHTML='';
+pool.forEach(g=>{const d=document.createElement('div');d.className='drag-chip';d.draggable=true;d.textContent=g;
+d.ondragstart=e=>e.dataTransfer.setData('text/plain',g);t.appendChild(d);});}
+function wire(id,rk){const el=document.getElementById(id);
+el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();if(slots[rk])return;const g=e.dataTransfer.getData('text/plain');
+if(!pool.includes(g))return;slots[rk]=g;pool=pool.filter(x=>x!==g);el.innerHTML='<h3>'+heads[rk]+'</h3><span class="drag-chip in-bin" style="font-size:0.72rem">'+g+'</span>';tray();};}
+wire('p0',0);wire('p1',1);wire('p2',2);tray();
+document.getElementById('go').onclick=()=>{let pts=0;ideal.forEach((g,i)=>{if(slots[i]===g)pts++;});
+const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add(pts>=2?'good':'bad');
+fb.textContent=pts+'/3 match the sample priority (your life may differ).';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

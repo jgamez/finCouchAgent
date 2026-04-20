@@ -1,0 +1,94 @@
+{
+  "folders": [
+    {
+      "name": "project 1 vanilla",
+      "path": "project-1-vanilla"
+    },
+    {
+      "name": "project 2 Orchestrated",
+      "path": "project-2-orchestrated"
+    },
+    {
+      "name": "MCP Server (shared)",
+      "path": "shared/mcp-servers/content-repository"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:project 1 vanilla}/.venv/bin/python",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.black-formatter",
+      "ms-python.pylint",
+      "bradlc.vscode-tailwindcss"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "▶ project 1 vanilla (port 8000)",
+        "type": "python",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": ["web.app:app", "--reload", "--port", "8000"],
+        "cwd": "${workspaceFolder:project 1 vanilla}",
+        "python": "${workspaceFolder:project 1 vanilla}/.venv/bin/python",
+        "envFile": "${workspaceFolder:project 1 vanilla}/.env",
+        "console": "integratedTerminal"
+      },
+      {
+        "name": "🧪 Debug Claude API tests (pytest)",
+        "type": "python",
+        "request": "launch",
+        "module": "pytest",
+        "args": [
+          "${workspaceFolder:project 1 vanilla}/tests/test_claude_api.py",
+          "-v",
+          "-s"
+        ],
+        "cwd": "${workspaceFolder:project 1 vanilla}",
+        "python": "${workspaceFolder:project 1 vanilla}/.venv/bin/python",
+        "envFile": "${workspaceFolder:project 1 vanilla}/.env",
+        "console": "integratedTerminal",
+        "justMyCode": false
+      },
+      {
+        "name": "▶ project 2 Orchestrated (port 8001)",
+        "type": "python",
+        "request": "launch",
+        "module": "uvicorn",
+        "args": ["web.app:app", "--reload", "--port", "8001"],
+        "cwd": "${workspaceFolder:project 2 Orchestrated}",
+        "python": "${workspaceFolder:project 2 Orchestrated}/.venv/bin/python",
+        "envFile": "${workspaceFolder:project 2 Orchestrated}/.env",
+        "console": "integratedTerminal"
+      },
+      {
+        "name": "🔌 Run MCP Server (direct test)",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:MCP Server (shared)}/server.py",
+        "cwd": "${workspaceFolder:MCP Server (shared)}",
+        "python": "${workspaceFolder:MCP Server (shared)}/.venv/bin/python",
+        "console": "integratedTerminal"
+      }
+    ],
+    "compounds": [
+      {
+        "name": "▶ project 1 vanilla + MCP server",
+        "configurations": [
+          "▶ project 1 vanilla (port 8000)",
+          "🔌 Run MCP Server (direct test)"
+        ],
+        "stopAll": true
+      }
+    ]
+  }
+}

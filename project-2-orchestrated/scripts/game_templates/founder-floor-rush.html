@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Founder floor rush</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Founder &amp; partner rush</h1>
+<p class="sub">Pac-style co-op: clear every revenue dot. <strong>Arrows</strong> = founder · <strong>W A S D</strong> = partner · Red blobs = overhead chasing your runway.</p>
+<p class="coop-hint">Work the maze together — you can’t pass through each other. Ghosts pick the nearer teammate.</p>
+<div class="score" id="sc">Revenue dots left: —</div>
+<div class="game-canvas-wrap"><canvas id="cv" class="embed-game-canvas" width="330" height="242" aria-label="Maze game"></canvas></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+(function(){
+const CELL=22;
+const mazeStr=[
+"###############",
+"#.............#",
+"#.###.#.#.###.#",
+"#...#.#.#.#...#",
+"#.###.#.#.###.#",
+"#.............#",
+"#.###.....###.#",
+"#.............#",
+"###############"
+];
+const rows=mazeStr.length, cols=mazeStr[0].length;
+function wall(r,c){return r<0||c<0||r>=rows||c>=cols||mazeStr[r][c]==="#";}
+const pelletSet=new Set();
+for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(mazeStr[r][c]===".")pelletSet.add(r+","+c);
+
+const p1={r:1,c:1,color:"#f5a623",label:"F"};
+const p2={r:1,c:cols-2,color:"#38bdf8",label:"P"};
+const ghosts=[
+  {r:5,c:7,color:"#e53e3e"},
+  {r:3,c:7,color:"#c53030"}
+];
+let g1Dir={dr:0,dc:0};
+let g2Dir={dr:0,dc:0};
+let state="play";
+let tick=0;
+
+const canvas=document.getElementById("cv");
+const ctx=canvas.getContext("2d");
+canvas.width=cols*CELL;
+canvas.height=rows*CELL;
+
+function draw(){
+  ctx.fillStyle="#0d1b2a";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#1e3a5f";
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(wall(r,c))ctx.fillRect(c*CELL,r*CELL,CELL-1,CELL-1);
+  ctx.fillStyle="#fde68a";
+  pelletSet.forEach(k=>{
+    const p=k.split(","), rr=+p[0], cc=+p[1];
+    ctx.beginPath();ctx.arc(cc*CELL+CELL/2,rr*CELL+CELL/2,3.2,0,6.283);ctx.fill();
+  });
+  [p1,p2].forEach(p=>{
+    const x=p.c*CELL+CELL/2,y=p.r*CELL+CELL/2;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(x,y,CELL*0.36,0.25*Math.PI,1.75*Math.PI);ctx.lineTo(x,y);ctx.fill();
+    ctx.fillStyle="#0d1b2a";ctx.font="bold 11px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(p.label,x,y);
+  });
+  ghosts.forEach(g=>{
+    ctx.fillStyle=g.color;
+    ctx.beginPath();ctx.arc(g.c*CELL+CELL/2,g.r*CELL+CELL/2,CELL*0.38,0,6.283);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="9px system-ui";ctx.textAlign="center";
+    ctx.fillText("$$",g.c*CELL+CELL/2,g.r*CELL+CELL/2+1);
+  });
+}
+
+function stepPlayer(p,dir){
+  if(dir.dr===0&&dir.dc===0)return;
+  const nr=p.r+dir.dr, nc=p.c+dir.dc;
+  if(wall(nr,nc))return;
+  const o=p===p1?p2:p1;
+  if(nr===o.r&&nc===o.c)return;
+  p.r=nr;p.c=nc;
+  const key=p.r+","+p.c;
+  if(pelletSet.has(key))pelletSet.delete(key);
+}
+
+function stepGhost(g){
+  const opts=[[0,1],[0,-1],[1,0],[-1,0]].filter(([dr,dc])=>!wall(g.r+dr,g.c+dc));
+  if(!opts.length)return;
+  let pick=opts[0],best=1e9;
+  for(const [dr,dc] of opts){
+    const nr=g.r+dr,nc=g.c+dc;
+    [p1,p2].forEach(t=>{
+      const d=Math.abs(nr-t.r)+Math.abs(nc-t.c);
+      if(d<best){best=d;pick=[dr,dc];}
+    });
+  }
+  if(Math.random()<0.28)pick=opts[Math.floor(Math.random()*opts.length)];
+  g.r+=pick[0];g.c+=pick[1];
+}
+
+function hit(){
+  for(const g of ghosts){
+    if((g.r===p1.r&&g.c===p1.c)||(g.r===p2.r&&g.c===p2.c))return true;
+  }
+  return false;
+}
+
+function tickGame(){
+  if(state!=="play")return;
+  tick++;
+  stepPlayer(p1,g1Dir);
+  stepPlayer(p2,g2Dir);
+  if(tick%2===0)ghosts.forEach(stepGhost);
+  if(hit()){
+    state="lost";
+    const fb=document.getElementById("fb");
+    fb.classList.remove("hidden");fb.classList.add("bad");
+    fb.textContent="Overhead caught a teammate! Fixed costs keep hunting — trim burn or grow revenue.";
+    return;
+  }
+  if(pelletSet.size===0){
+    state="won";
+    const fb=document.getElementById("fb");
+    fb.classList.remove("hidden");fb.classList.add("good");
+    fb.textContent="All dots banked — true co-founder energy. Next: watch margin after variable AND fixed costs.";
+    return;
+  }
+  document.getElementById("sc").textContent="Revenue dots left: "+pelletSet.size+" · Move both roles";
+  draw();
+}
+
+document.addEventListener("keydown",e=>{
+  if(state!=="play")return;
+  switch(e.key){
+    case "ArrowUp": e.preventDefault(); g1Dir={dr:-1,dc:0}; break;
+    case "ArrowDown": e.preventDefault(); g1Dir={dr:1,dc:0}; break;
+    case "ArrowLeft": e.preventDefault(); g1Dir={dr:0,dc:-1}; break;
+    case "ArrowRight": e.preventDefault(); g1Dir={dr:0,dc:1}; break;
+    case "w": case "W": g2Dir={dr:-1,dc:0}; break;
+    case "s": case "S": g2Dir={dr:1,dc:0}; break;
+    case "a": case "A": g2Dir={dr:0,dc:-1}; break;
+    case "d": case "D": g2Dir={dr:0,dc:1}; break;
+  }
+});
+
+draw();
+document.getElementById("sc").textContent="Revenue dots left: "+pelletSet.size+" · Move both roles";
+setInterval(tickGame,140);
+})();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Start Learning{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem 2rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    color: var(--navy);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--slate);
+    max-width: 520px;
+    margin: 0 auto 0.6rem;
+    line-height: 1.6;
+  }
+
+  .form-card {
+    max-width: 580px;
+    margin: 0 auto 4rem;
+    background: var(--white);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 40px rgba(13,27,42,0.12);
+  }
+
+  .form-section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-section-title span {
+    background: var(--gold-light);
+    color: var(--gold);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--slate);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E2E8F0;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--navy);
+    transition: border-color 0.2s;
+    background: var(--cream);
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: var(--white);
+  }
+
+  .pill-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    padding: 0.5rem 1.1rem;
+    border: 2px solid #E2E8F0;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--white);
+    color: var(--slate);
+  }
+
+  .pill.selected,
+  .pill:hover {
+    border-color: var(--gold);
+    background: var(--gold-light);
+    color: var(--navy);
+    font-weight: 600;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #EDF2F7;
+    margin: 2rem 0;
+  }
+
+  .submit-row {
+    margin-top: 1.5rem;
+  }
+
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    font-size: 1.05rem;
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,27,42,0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .loading-overlay.active { display: flex; }
+
+  .loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid rgba(245,166,35,0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  .loading-text {
+    color: var(--white);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .loading-subtext {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.88rem;
+    text-align: center;
+    max-width: 420px;
+    line-height: 1.45;
+  }
+
+  .thinking-panel {
+    width: min(520px, calc(100vw - 2rem));
+    max-height: min(340px, 42vh);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+  }
+
+  .thinking-panel-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 0.5rem;
+  }
+
+  .thinking-log {
+    max-height: min(280px, 36vh);
+    overflow-y: auto;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.92);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .thinking-row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.5rem 0.75rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .thinking-row:last-child { border-bottom: none; }
+
+  .thinking-kind {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    align-self: start;
+    padding-top: 0.1rem;
+  }
+
+  .thinking-msg { word-break: break-word; }
+
+  .thinking-empty {
+    color: rgba(255,255,255,0.45);
+    font-style: italic;
+    padding: 0.5rem 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <p class="hero-eyebrow">Financial Education</p>
+  <h1>Learn money skills<br /><em>built for you.</em></h1>
+  <p class="hero-sub">Tell us a little about yourself and pick a topic — we'll build a personalized lesson just for you.</p>
+</div>
+
+<div class="container">
+  <div class="form-card">
+    <p class="form-section-title"><span>1</span> About You</p>
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="name" placeholder="First name" />
+    </div>
+    <div class="form-group">
+      <label>Your Age</label>
+      <input type="number" id="age" min="10" max="25" placeholder="e.g. 16" />
+    </div>
+
+    <hr class="divider" />
+
+    <p class="form-section-title"><span>2</span> Your Level</p>
+    <div class="form-group">
+      <label>Education Level</label>
+      <div class="pill-group" id="level-group">
+        <div class="pill" data-value="middle_school" onclick="selectPill(this, 'level-group', 'audience_level')">Middle School</div>
+        <div class="pill" data-value="high_school" onclick="selectPill(this, 'level-group', 'audience_level')">High School</div>
+        <div class="pill" data-value="college" onclick="selectPill(this, 'level-group', 'audience_level')">College</div>
+      </div>
+      <input type="hidden" id="audience_level" />
+    </div>
+    <div class="form-group">
+      <label>Financial Knowledge</label>
+      <div class="pill-group" id="prof-group">
+        <div class="pill" data-value="beginner" onclick="selectPill(this, 'prof-group', 'proficiency')">Beginner</div>
+        <div class="pill" data-value="intermediate" onclick="selectPill(this, 'prof-group', 'proficiency')">Intermediate</div>
+        <div class="pill" data-value="advanced" onclick="selectPill(this, 'prof-group', 'proficiency')">Advanced</div>
+      </div>
+      <input type="hidden" id="proficiency" />
+    </div>
+
+    <hr class="divider" />
+
+    <p class="form-section-title"><span>3</span> What to Learn</p>
+    <div class="form-group">
+      <label>Financial Topic</label>
+      <select id="topic">
+        <option value="">Select a topic...</option>
+        <option value="budgeting">Budgeting & Money Management</option>
+        <option value="saving">Saving & Emergency Funds</option>
+        <option value="investing">Investing & the Stock Market</option>
+        <option value="credit">Credit Scores & Borrowing</option>
+        <option value="compound interest">Compound Interest</option>
+        <option value="taxes">Taxes & Filing</option>
+        <option value="insurance">Insurance Basics</option>
+        <option value="student loans">Student Loans & Financial Aid</option>
+        <option value="entrepreneurship">Entrepreneurship & Side Hustles</option>
+        <option value="cryptocurrency">Cryptocurrency & Digital Assets</option>
+      </select>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn btn-primary submit-btn" onclick="startLesson()">
+        Build My Lesson →
+      </button>
+    </div>
+    <p id="error-msg" style="color:#E53E3E;text-align:center;margin-top:1rem;font-size:0.9rem;"></p>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <p class="loading-text">Building your lesson...</p>
+  <p class="loading-subtext" id="loading-status">Starting teacher agent…</p>
+  <div class="thinking-panel">
+    <div class="thinking-panel-title">Agent activity</div>
+    <div class="thinking-log" id="thinking-log" aria-live="polite" aria-relevant="additions"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const state = { audience_level: '', proficiency: '' };
+
+  function selectPill(el, groupId, stateKey) {
+    document.querySelectorAll(`#${groupId} .pill`).forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById(stateKey).value = el.dataset.value;
+    state[stateKey] = el.dataset.value;
+  }
+
+  async function startLesson() {
+    const name = document.getElementById('name').value.trim();
+    const age = parseInt(document.getElementById('age').value);
+    const audience_level = document.getElementById('audience_level').value;
+    const proficiency = document.getElementById('proficiency').value;
+    const topic = document.getElementById('topic').value;
+
+    const err = document.getElementById('error-msg');
+
+    if (!name) { err.textContent = 'Please enter your name.'; return; }
+    if (!age || age < 10 || age > 25) { err.textContent = 'Please enter a valid age (10-25).'; return; }
+    if (!audience_level) { err.textContent = 'Please select your education level.'; return; }
+    if (!proficiency) { err.textContent = 'Please select your knowledge level.'; return; }
+    if (!topic) { err.textContent = 'Please select a topic.'; return; }
+    err.textContent = '';
+
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('loading-status').textContent = 'Starting teacher agent…';
+    document.getElementById('thinking-log').innerHTML = '<p class="thinking-empty">Connecting…</p>';
+
+    try {
+      const res = await fetch('/api/start-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, age, audience_level, proficiency, topic })
+      });
+      const data = await res.json();
+      const sessionId = data.session_id;
+
+      // Poll for completion
+      await pollForLesson(sessionId);
+
+    } catch (e) {
+      document.getElementById('loading').classList.remove('active');
+      err.textContent = 'Something went wrong. Please try again.';
+    }
+  }
+
+  function escapeLogHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function humanizeLogEntry(e) {
+    const kind = e?.kind || '';
+    const raw = String(e?.message || '');
+    if (kind === 'start') return 'Getting to know your request and setting up the lesson plan.';
+    if (kind === 'model') return 'Thinking through the best lesson structure for you.';
+    if (kind === 'tool_call') return 'Looking up trusted learning resources for your topic.';
+    if (kind === 'tool_result') return 'Found relevant resources and examples.';
+    if (kind === 'tools_returned') return 'Integrating those resources into your lesson.';
+    if (kind === 'assistant_text') return 'Drafting your personalized lesson steps.';
+    if (kind === 'parse') return 'Finalizing lesson details and formatting.';
+    if (kind === 'complete') return 'Lesson is ready. Opening it now...';
+    if (kind === 'step_ready') return 'Another lesson section is ready for you.';
+    if (kind === 'error' || kind === 'tool_error') return 'Ran into an issue and trying to recover.';
+    if (kind === 'warn') return 'Adjusting the plan to keep things on track.';
+    if (kind === 'step') {
+      if (/parallel fetches|library|mcp|jumpstart/i.test(raw)) {
+        return 'Gathering articles, videos, and activities that match your level.';
+      }
+      if (/fallback/i.test(raw)) return 'Trying a backup generation path.';
+      return 'Working on the next lesson step.';
+    }
+    return 'Working on your lesson...';
+  }
+
+  function renderThinkingLog(entries) {
+    const el = document.getElementById('thinking-log');
+    if (!entries || !entries.length) {
+      el.innerHTML = '<p class="thinking-empty">Preparing your personalized lesson…</p>';
+      return;
+    }
+    const friendly = [];
+    for (const e of entries) {
+      const msg = humanizeLogEntry(e);
+      if (!friendly.length || friendly[friendly.length - 1] !== msg) {
+        friendly.push(msg);
+      }
+    }
+    el.innerHTML = friendly.map((msg, i) => {
+      return `<div class="thinking-row"><span class="thinking-kind">Step ${i + 1}</span><span class="thinking-msg">${escapeLogHtml(msg)}</span></div>`;
+    }).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  async function pollForLesson(sessionId) {
+    for (let attempts = 0; attempts < 90; attempts++) {
+      const res = await fetch(`/api/lesson-status/${sessionId}`);
+      const data = await res.json();
+
+      const log = data.generation_log || [];
+      renderThinkingLog(log);
+      if (log.length) {
+        document.getElementById('loading-status').textContent = humanizeLogEntry(log[log.length - 1]);
+      } else if (data.phase) {
+        document.getElementById('loading-status').textContent = data.phase;
+      }
+
+      // Open as soon as we have an outline (titles + placeholders), not only after step 1 is fully written
+      const canOpenLesson =
+        (data.status === 'ready' || data.status === 'partial') &&
+        data.total_steps >= 1 &&
+        data.lesson != null;
+      if (canOpenLesson) {
+        window.location.href = `/lesson/${sessionId}`;
+        return;
+      }
+      if (data.status === 'error') {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('error-msg').textContent = 'Error generating lesson: ' + data.error;
+        return;
+      }
+
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('error-msg').textContent = 'Lesson is taking longer than expected. Please try again.';
+  }
+</script>
+{% endblock %}

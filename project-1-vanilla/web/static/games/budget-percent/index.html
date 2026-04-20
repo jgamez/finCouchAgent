@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live pie</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Paint the pie</h1><p class="sub">You earn $400/mo in this drill. Slide the three slices.</p>
+<label>Needs $<span id="nv">200</span></label><input type="range" id="n" min="0" max="400" value="200">
+<label>Wants $<span id="wv">120</span></label><input type="range" id="w" min="0" max="400" value="120">
+<label>Savings $<span id="sv">80</span></label><input type="range" id="s" min="0" max="400" value="80">
+<div class="pie-visual" id="pie"></div>
+<div class="feedback" id="o"></div>
+<script>
+function paint(){const n=+document.getElementById('n').value,w=+document.getElementById('w').value,s=+document.getElementById('s').value,t=n+w+s||1;
+document.getElementById('nv').textContent=n;document.getElementById('wv').textContent=w;document.getElementById('sv').textContent=s;
+const N=n/t*360,W=w/t*360;document.getElementById('pie').style.background='conic-gradient(#22c55e 0deg '+(N)+'deg, #f5a623 '+(N)+'deg '+(N+W)+'deg, #64748b '+(N+W)+'deg 360deg)';
+document.getElementById('o').textContent='Needs '+(n/t*100).toFixed(0)+'%, wants '+(w/t*100).toFixed(0)+'%, save '+(s/t*100).toFixed(0)+'%. 50/30/20 is a starting template.';}
+['n','w','s'].forEach(id=>document.getElementById(id).oninput=paint);paint();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

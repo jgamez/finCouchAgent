@@ -1,0 +1,62 @@
+[
+  {
+    "id": "budgeting-101-ms",
+    "title": "What is a Budget? Making Money Work for You",
+    "content": "A budget is your money plan. Think of it like a game where you decide where every dollar goes before you spend it. When you earn money from allowance or a part-time job, a budget helps you decide how much to save, how much to spend, and how much to give. The most popular budgeting rule is 50/30/20: 50% for needs (food, school supplies), 30% for wants (games, snacks), and 20% for savings. Making a budget might sound boring, but it's actually a superpower — it means YOU are in control of your money, not the other way around.",
+    "topics": ["budgeting", "saving", "personal finance"],
+    "audience_levels": ["middle_school"],
+    "proficiency_levels": ["beginner", "intermediate"],
+    "reading_level": "grade_6",
+    "source": "goalsetter_library"
+  },
+  {
+    "id": "budgeting-201-hs",
+    "title": "Zero-Based Budgeting: Give Every Dollar a Job",
+    "content": "Zero-based budgeting means your income minus your expenses equals zero — every dollar is assigned a purpose. This doesn't mean spending everything; it means allocating every dollar intentionally, including to savings and investments. Start by listing your monthly income (job, allowance, side hustles). Then list fixed expenses (phone bill, subscriptions), variable expenses (food, entertainment), savings goals, and debt payments if any. Adjust until income minus all allocations equals zero. Apps like YNAB (You Need A Budget) or even a simple spreadsheet make this manageable.",
+    "topics": ["budgeting", "personal finance", "saving"],
+    "audience_levels": ["high_school"],
+    "proficiency_levels": ["intermediate", "advanced"],
+    "reading_level": "grade_10",
+    "source": "goalsetter_library"
+  },
+  {
+    "id": "investing-basics-hs",
+    "title": "Investing 101: Making Your Money Work While You Sleep",
+    "content": "Investing means putting your money to work to earn more money over time. The stock market is one way to invest — when you buy a stock, you own a small piece of a company. If the company grows, your investment grows. The key concept is compound interest: earning interest on your interest. $1,000 invested at 7% annual return becomes $1,967 in 10 years without adding another dollar. Time is the most powerful investing tool, which is why starting in high school is a massive advantage over starting at 30.",
+    "topics": ["investing", "stock market", "compound interest"],
+    "audience_levels": ["high_school", "college"],
+    "proficiency_levels": ["beginner", "intermediate"],
+    "reading_level": "grade_11",
+    "source": "goalsetter_library"
+  },
+  {
+    "id": "credit-scores-hs",
+    "title": "Credit Scores: Your Financial GPA",
+    "content": "Your credit score is a three-digit number (300-850) that tells lenders how trustworthy you are with borrowed money. Think of it as your financial GPA. The five factors that determine your score: Payment history (35%) — do you pay on time? Amounts owed (30%) — how much of your available credit are you using? Length of credit history (15%) — how long have your accounts been open? Credit mix (10%) — do you have different types of credit? New credit (10%) — how often are you applying for new credit? A score above 700 is good; above 750 is excellent.",
+    "topics": ["credit", "credit score", "borrowing"],
+    "audience_levels": ["high_school", "college"],
+    "proficiency_levels": ["beginner", "intermediate"],
+    "reading_level": "grade_10",
+    "source": "goalsetter_library"
+  },
+  {
+    "id": "investing-advanced-college",
+    "title": "Portfolio Diversification and Asset Allocation",
+    "content": "Asset allocation is how you divide your investments among different asset classes: stocks (equities), bonds (fixed income), real estate, and cash. Diversification within those classes — spreading across sectors, geographies, and company sizes — reduces risk without necessarily reducing expected returns. Modern Portfolio Theory (MPT) suggests there's an 'efficient frontier' of optimal portfolios that maximize return for a given level of risk. For young investors, a common starting allocation is 80-90% stocks, 10-20% bonds, shifting more conservative as you age (the glide path). Low-cost index funds make diversification accessible to everyone.",
+    "topics": ["investing", "portfolio", "diversification", "asset allocation"],
+    "audience_levels": ["college"],
+    "proficiency_levels": ["intermediate", "advanced"],
+    "reading_level": "college",
+    "source": "goalsetter_library"
+  },
+  {
+    "id": "saving-goals-ms",
+    "title": "Saving for Something Awesome: The Power of Goals",
+    "content": "Saving is easier when you know what you're saving FOR. A savings goal has three parts: what you want (a new gaming console, a trip, a car), how much it costs, and when you want it. If a gaming console costs $500 and you can save $25 a week, you'll have it in 20 weeks — about 5 months! Write your goals down and track your progress. Watching your savings grow is motivating. Try having separate 'jars' or accounts for different goals: one for short-term (3 months), one for medium-term (1 year), and one you don't touch (emergency fund).",
+    "topics": ["saving", "goals", "personal finance"],
+    "audience_levels": ["middle_school"],
+    "proficiency_levels": ["beginner"],
+    "reading_level": "grade_6",
+    "source": "goalsetter_library"
+  }
+]

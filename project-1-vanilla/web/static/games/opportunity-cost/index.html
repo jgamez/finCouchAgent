@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pick a chest</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Two paths</h1><p class="sub">$200 — tap a chest to see the tradeoff.</p>
+<div class="hero-pick">
+<button type="button" class="hero-tile" id="a">🎵<small>Concert<br>$200</small></button>
+<button type="button" class="hero-tile" id="b">💻<small>Laptop fund<br>$200</small></button>
+</div>
+<div class="feedback hidden" id="out"></div>
+<script>
+document.getElementById('a').onclick=()=>{const o=document.getElementById('out');o.classList.remove('hidden');o.textContent='Great memories — opportunity cost: $200 not growing toward the laptop + missed interest.';};
+document.getElementById('b').onclick=()=>{const o=document.getElementById('out');o.classList.remove('hidden');o.textContent='Closer to the laptop — opportunity cost: skipping the concert vibe this month.';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

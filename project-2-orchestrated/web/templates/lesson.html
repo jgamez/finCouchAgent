@@ -1,0 +1,1381 @@
+{% extends "base.html" %}
+
+{% block title %}Your Lesson{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Layout ── */
+  .lesson-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    align-items: start;
+  }
+
+  .lesson-layout > main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: calc(100vh - 7rem);
+    max-height: calc(100vh - 7rem);
+  }
+
+  @media (max-width: 768px) {
+    .lesson-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: sticky;
+    top: 1.5rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .sidebar-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 1rem;
+  }
+
+  .step-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 0.85rem;
+    color: var(--slate);
+  }
+
+  .step-nav-item:hover { background: var(--cream); }
+  .step-nav-item.active { background: var(--gold-light); color: var(--navy); font-weight: 600; }
+  .step-nav-item.completed { color: var(--green); }
+
+  .step-nav-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-nav-item.active .step-nav-dot { background: var(--gold); color: var(--navy); }
+  .step-nav-item.completed .step-nav-dot { background: var(--green); color: white; }
+  .step-nav-item.pending { opacity: 0.55; }
+  .step-pending-banner {
+    background: var(--gold-light);
+    border-left: 3px solid var(--gold);
+    padding: 0.75rem 1rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--navy);
+  }
+
+  .progress-bar-container {
+    margin-top: 1.25rem;
+    background: #E2E8F0;
+    border-radius: 50px;
+    height: 11.25px;
+    overflow: hidden;
+  }
+
+  .progress-bar-container--generating {
+    box-shadow: 0 0 0 1px rgba(214, 158, 46, 0.35);
+    animation: progress-track-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes progress-track-pulse {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(214, 158, 46, 0.2); }
+    50% { box-shadow: 0 0 0 3px rgba(214, 158, 46, 0.28); }
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--green));
+    border-radius: 50px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-bar-container--generating .progress-bar-fill {
+    background-image: linear-gradient(
+      90deg,
+      var(--gold) 0%,
+      #F5E6B8 22%,
+      var(--green) 45%,
+      #C6E6C0 55%,
+      var(--green) 65%,
+      #F5E6B8 78%,
+      var(--gold) 100%
+    );
+    background-size: 220% 100%;
+    animation: progress-bar-shimmer 1.35s ease-in-out infinite;
+  }
+
+  @keyframes progress-bar-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--slate);
+    margin-top: 0.4rem;
+    text-align: right;
+  }
+
+  /* ── Step Card ── */
+  .step-card {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .step-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .step-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge-intro { background: #EBF8FF; color: #2B6CB0; }
+  .badge-content { background: #F0FFF4; color: #276749; }
+  .badge-video { background: #FFF5F5; color: #C53030; }
+  .badge-game { background: #FAF5FF; color: #6B46C1; }
+  .badge-reflection { background: #FFFAF0; color: #B7791F; }
+  .badge-quiz,
+  .badge-open_question,
+  .badge-challenge { background: #EBF8FF; color: #2C5282; }
+
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+
+  .step-body {
+    flex: 0 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #2D3748;
+  }
+
+  .step-body p { margin-bottom: 1rem; }
+  .step-body h3 { font-family: 'Fraunces', serif; margin: 1.25rem 0 0.5rem; color: var(--navy); }
+  .step-body ul, .step-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  .step-body li { margin-bottom: 0.4rem; }
+  .step-body strong { color: var(--navy); }
+
+  .md-table-wrap { overflow-x: auto; margin: 0.75rem 0 1rem; }
+  .md-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+  }
+  .md-table th, .md-table td {
+    padding: 0.6rem 0.7rem;
+    border-bottom: 1px solid #E2E8F0;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+  .md-table th { background: #F8FAFC; color: var(--navy); font-weight: 700; }
+  .md-table tr:last-child td { border-bottom: none; }
+
+  /* ── Video ── */
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .video-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+    background: #000;
+  }
+
+  .video-meta {
+    font-size: 0.9rem;
+    color: var(--slate);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .video-meta a {
+    color: #2B6CB0;
+    font-weight: 600;
+  }
+
+  .watch-prompt {
+    background: var(--gold-light);
+    border-left: 3px solid var(--gold);
+    padding: 0.75rem 1rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.9rem;
+    color: var(--navy);
+    margin-top: 0.75rem;
+  }
+
+  /* ── Game ── */
+  .game-embed {
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    overflow: hidden;
+    height: auto;
+    margin-bottom: 1rem;
+  }
+
+  .game-embed iframe {
+    width: 100%;
+    min-height: 120px;
+    height: 120px;
+    border: none;
+    display: block;
+  }
+
+  .game-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 1rem;
+    background: linear-gradient(135deg, #667eea20, #764ba220);
+    color: var(--slate);
+  }
+
+  .game-icon { font-size: 3rem; }
+
+  /* ── Quiz ── */
+  .question-block {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--cream);
+    border-radius: 12px;
+  }
+
+  .question-text {
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+
+  .option-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E2E8F0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+
+  .option-item:hover { border-color: var(--gold); background: var(--gold-light); }
+  .option-item.selected { border-color: var(--navy); background: var(--navy); color: white; }
+  .option-item.correct { border-color: var(--green); background: #F0FFF4; color: #276749; }
+  .option-item.wrong { border-color: #E53E3E; background: #FFF5F5; color: #C53030; }
+
+  .short-answer-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E2E8F0;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    min-height: 100px;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+
+  .short-answer-textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  /* ── Navigation ── */
+  .step-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #EDF2F7;
+  }
+
+  /* ── Results ── */
+  .results-card {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .grade-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 auto 1.5rem;
+  }
+
+  .grade-A { background: #F0FFF4; color: #276749; }
+  .grade-B { background: var(--gold-light); color: var(--gold); }
+  .grade-C { background: #FFFAF0; color: #B7791F; }
+  .grade-D, .grade-F { background: #FFF5F5; color: #C53030; }
+
+  .lesson-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    gap: 1.5rem;
+  }
+
+  .loading-spinner-sm {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(245,166,35,0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Print / PDF toolbar ── */
+  .lesson-main-column {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lesson-main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    min-height: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  #lesson-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lesson-print-btn {
+    padding: 0.5rem 1.15rem;
+    font-size: 0.88rem;
+    background: var(--white);
+    color: var(--navy);
+    border: 2px solid var(--navy);
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .lesson-print-btn:hover:not(.lesson-print-btn--blocked) {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .lesson-print-btn--blocked {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .lesson-print-btn--blocked:hover {
+    background: var(--white);
+    color: var(--navy);
+  }
+
+  .print-lesson-toast {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(420px, calc(100vw - 2rem));
+    padding: 0.85rem 1.1rem;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 12px;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    box-shadow: 0 8px 28px rgba(13, 27, 42, 0.35);
+    z-index: 2000;
+    text-align: center;
+  }
+
+  .lesson-print-surface {
+    display: none;
+  }
+
+  @media print {
+    nav.navbar,
+    .no-print {
+      display: none !important;
+    }
+
+    body {
+      background: #fff !important;
+      color: #000 !important;
+    }
+
+    .lesson-layout {
+      display: block !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .lesson-layout > main {
+      height: auto !important;
+      max-height: none !important;
+      display: block !important;
+    }
+
+    .lesson-main-column {
+      display: block !important;
+      flex: none !important;
+      min-height: 0 !important;
+    }
+
+    #lesson-container {
+      display: none !important;
+      overflow: visible !important;
+      flex: none !important;
+    }
+
+    .sidebar {
+      display: none !important;
+    }
+
+    .lesson-main-header {
+      display: none !important;
+    }
+
+    .print-lesson-toast {
+      display: none !important;
+    }
+
+    .lesson-print-surface {
+      display: block !important;
+      padding: 0.4in 0.5in;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #000;
+    }
+
+    .lesson-print-surface .print-doc-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 20pt;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+      color: #000;
+    }
+
+    .lesson-print-surface .print-doc-meta {
+      font-size: 9pt;
+      color: #444;
+      margin: 0 0 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .lesson-print-surface .print-step {
+      page-break-inside: avoid;
+      margin-bottom: 1.25rem;
+    }
+
+    .lesson-print-surface .print-step-num {
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #555;
+    }
+
+    .lesson-print-surface .print-step h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 14pt;
+      margin: 0.15rem 0 0.35rem;
+      color: #000;
+    }
+
+    .lesson-print-surface .print-step-type {
+      font-size: 9pt;
+      color: #444;
+      margin: 0 0 0.6rem;
+    }
+
+    .lesson-print-surface .step-body,
+    .lesson-print-surface .print-step-body {
+      font-size: 10.5pt;
+    }
+
+    .lesson-print-surface .step-body p,
+    .lesson-print-surface .print-step-body p {
+      margin-bottom: 0.5rem;
+    }
+
+    .lesson-print-surface .md-table {
+      border: 1px solid #999;
+      font-size: 9.5pt;
+    }
+
+    .lesson-print-surface .md-table th,
+    .lesson-print-surface .md-table td {
+      border-color: #bbb;
+    }
+
+    .lesson-print-surface .question-block {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.65rem;
+      border-radius: 6px;
+    }
+
+    .lesson-print-surface .print-answer-line {
+      margin: 0.5rem 0 0;
+      color: #666;
+      font-size: 10pt;
+    }
+
+    .lesson-print-surface a {
+      color: #000;
+      text-decoration: underline;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <p class="sidebar-title">📚 Lesson Steps</p>
+    <div id="step-nav-list"></div>
+    <div class="progress-bar-container" id="progress-bar-container" aria-live="polite">
+      <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+    <p class="progress-label" id="progress-label">0% complete</p>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+    <div class="lesson-main-column">
+    <header class="lesson-main-header no-print">
+      <button type="button" class="lesson-print-btn lesson-print-btn--blocked" id="print-lesson-btn" aria-disabled="true"
+        title="Printing is available once all lesson sections are 100% generated. Use Save as PDF in your browser’s print dialog when it’s ready.">
+        Print / Save PDF
+      </button>
+    </header>
+    <div id="lesson-container">
+      <div class="step-card">
+        <div class="lesson-loading">
+          <div class="loading-spinner-sm"></div>
+          <p style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--navy)">Loading your lesson...</p>
+        </div>
+      </div>
+    </div>
+    <div id="lesson-print-surface" class="lesson-print-surface" aria-hidden="true"></div>
+    </div>
+    <div id="print-lesson-toast" class="print-lesson-toast no-print" role="status" style="display: none"></div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const SESSION_ID = "{{ session_id }}";
+let lesson = null;
+let currentStep = 0;
+let answers = {};
+let partialPollTimer = null;
+
+const BADGE_CLASSES = {
+  intro: 'badge-intro',
+  content: 'badge-content',
+  video: 'badge-video',
+  game: 'badge-game',
+  reflection: 'badge-reflection',
+  quiz: 'badge-quiz',
+  open_question: 'badge-open_question',
+  challenge: 'badge-challenge',
+};
+
+const TYPE_LABELS = {
+  intro: '👋 Intro',
+  content: '📖 Content',
+  video: '🎬 Video',
+  game: '🎮 Activity',
+  reflection: '💭 Reflection',
+  quiz: '✏️ Quiz',
+  open_question: '💬 Discussion',
+  challenge: '🏆 Challenge',
+};
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function youtubeEmbedSrc(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const s = raw.trim();
+  const m = s.match(
+    /(?:youtube\.com\/(?:embed\/|shorts\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  const id = m ? m[1] : null;
+  if (id && !id.includes('placeholder')) {
+    return `https://www.youtube-nocookie.com/embed/${id}?rel=0`;
+  }
+  try {
+    const u = new URL(s, 'https://www.youtube.com');
+    if (u.hostname.replace(/^www\./, '') === 'youtube.com' && u.pathname.startsWith('/embed/')) {
+      const eid = u.pathname.split('/')[2];
+      if (eid && /^[\w-]{11}$/.test(eid)) {
+        return `https://www.youtube-nocookie.com/embed/${eid}?rel=0`;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  return s;
+}
+
+function gameIframeSrc(embedPath) {
+  if (!embedPath || typeof embedPath !== 'string') return '';
+  const p = embedPath.trim();
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  return p.startsWith('/') ? p : `/${p}`;
+}
+
+function wireGameEmbedAutoHeight() {
+  const clampGameHeight = (h) => Math.max(120, Math.min(700, Math.ceil(h + 6)));
+
+  const measuredFrameHeight = (frame) => {
+    try {
+      const doc = frame.contentDocument || frame.contentWindow?.document;
+      if (!doc) return null;
+      const body = doc.body;
+      const root = doc.documentElement;
+      const candidates = [
+        body ? body.scrollHeight : 0,
+        root ? root.scrollHeight : 0,
+      ].filter((v) => Number.isFinite(v) && v > 0);
+      if (!candidates.length) return null;
+      // Use the smaller scroll height to avoid feedback loops from inflated root values.
+      return Math.min(...candidates);
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const applyHeight = (frame, reportedHeight) => {
+    const measured = measuredFrameHeight(frame);
+    const sourceHeight = measured ?? reportedHeight;
+    if (!Number.isFinite(sourceHeight) || sourceHeight <= 0) return;
+    frame.style.height = `${clampGameHeight(sourceHeight)}px`;
+  };
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin) return;
+    const data = event.data || {};
+    if (data.type !== 'fincoach-game-height') return;
+
+    const frames = document.querySelectorAll('.game-embed iframe');
+    for (const frame of frames) {
+      if (frame.contentWindow === event.source) {
+        const reported = Number(data.height);
+        // Ignore obviously bogus spikes; rely on direct measurement instead.
+        applyHeight(frame, reported > 0 && reported < 3000 ? reported : NaN);
+        return;
+      }
+    }
+  });
+
+  document.addEventListener('load', (event) => {
+    const frame = event.target;
+    if (!(frame instanceof HTMLIFrameElement) || !frame.closest('.game-embed')) return;
+    applyHeight(frame, NaN);
+  }, true);
+}
+
+wireGameEmbedAutoHeight();
+
+function lessonHasPending() {
+  return lesson && Array.isArray(lesson.steps) && lesson.steps.some((s) => s._pending === true);
+}
+
+const PRINT_BLOCKED_MSG =
+  'Printing is available once every lesson section is 100% generated. When ready, use Print / Save PDF — then choose “Save as PDF” in the print dialog if you want a file.';
+
+const NEXT_STEP_ALMOST_READY_MSG = 'Next lesson step is almost ready';
+
+function showLessonToast(message, durationMs) {
+  const toast = document.getElementById('print-lesson-toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.style.display = 'block';
+  clearTimeout(window.__lessonToastT);
+  window.__lessonToastT = setTimeout(() => {
+    toast.style.display = 'none';
+  }, durationMs);
+}
+
+function showPrintBlockedMessage() {
+  showLessonToast(PRINT_BLOCKED_MSG, 5200);
+}
+
+function handleNextStepClick(index) {
+  if (!lesson || !Array.isArray(lesson.steps) || index >= lesson.steps.length - 1) return;
+  const next = lesson.steps[index + 1];
+  if (next._pending) {
+    showLessonToast(NEXT_STEP_ALMOST_READY_MSG, 3800);
+    const btn = document.getElementById('next-step-btn');
+    if (btn) {
+      btn.disabled = true;
+      clearTimeout(window.__nextStepBtnEnableT);
+      window.__nextStepBtnEnableT = setTimeout(() => {
+        const b = document.getElementById('next-step-btn');
+        if (b) b.disabled = false;
+      }, 2000);
+    }
+    return;
+  }
+  renderStep(index + 1);
+  const lessonPane = document.getElementById('lesson-container');
+  if (lessonPane) lessonPane.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updatePrintButtonState() {
+  const btn = document.getElementById('print-lesson-btn');
+  if (!btn) return;
+  const blocked = !lesson || !lesson.steps || lessonHasPending();
+  btn.classList.toggle('lesson-print-btn--blocked', blocked);
+  btn.setAttribute('aria-disabled', blocked ? 'true' : 'false');
+  if (blocked) {
+    btn.title =
+      'Printing is available once all lesson sections are 100% generated. Use Save as PDF in your browser’s print dialog when it’s ready.';
+  } else {
+    btn.title =
+      'Print this lesson or save as PDF (choose “Save as PDF” or “Microsoft Print to PDF” in the print dialog).';
+  }
+}
+
+function renderAssessmentForPrint(assessment) {
+  if (!assessment || !assessment.questions) return '';
+  return assessment.questions
+    .map((q, qi) => {
+      const qtext = escapeHtml(String(q.question || ''));
+      if (q.type === 'multiple_choice') {
+        const opts = (q.options || [])
+          .map((o) => `<li>${escapeHtml(String(o))}</li>`)
+          .join('');
+        return `<div class="question-block"><p><strong>${qi + 1}. ${qtext}</strong></p><ul>${opts}</ul></div>`;
+      }
+      return `<div class="question-block"><p><strong>${qi + 1}. ${qtext}</strong></p><p class="print-answer-line">_____________________________</p></div>`;
+    })
+    .join('');
+}
+
+function printStepBodyForPdf(step) {
+  if (!step || step._pending) return '';
+  if (['intro', 'content', 'reflection'].includes(step.step_type)) {
+    return `<div class="step-body">${markdownToHtml(step.content || '')}</div>`;
+  }
+  if (step.step_type === 'video' && step.video) {
+    const vt = escapeHtml(step.video.title || 'Lesson video');
+    const vu = step.video.url ? escapeHtml(step.video.url) : '';
+    let h = `<p><strong>${vt}</strong></p>`;
+    if (vu) h += `<p>Video link: <a href="${vu}">${vu}</a></p>`;
+    if (step.video.watch_prompt) {
+      h += `<p><strong>Watch for:</strong> ${escapeHtml(step.video.watch_prompt)}</p>`;
+    }
+    if (step.content) h += `<div class="step-body">${markdownToHtml(step.content)}</div>`;
+    return h;
+  }
+  if (step.step_type === 'game' && step.game) {
+    let h = markdownToHtml(step.game.instructions || '');
+    const gt = escapeHtml(step.game.title || 'Activity');
+    const mins =
+      step.game.estimated_minutes != null ? escapeHtml(String(step.game.estimated_minutes)) : '—';
+    h += `<p><strong>${gt}</strong> (about ${mins} min). <em>Interactive activity — use the live lesson to play.</em></p>`;
+    return h;
+  }
+  if (['quiz', 'open_question', 'challenge'].includes(step.step_type) && step.assessment) {
+    return `<div class="print-step-body">${renderAssessmentForPrint(step.assessment)}</div>`;
+  }
+  return '';
+}
+
+function buildLessonPrintHtml() {
+  if (!lesson || !lesson.steps) return '';
+  const title = escapeHtml(lesson.lesson_title || 'Lesson');
+  const dateStr = new Date().toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const parts = [
+    `<div class="print-doc"><h1 class="print-doc-title">${title}</h1><p class="print-doc-meta">FinCoach · ${escapeHtml(dateStr)}</p>`,
+  ];
+  lesson.steps.forEach((step, idx) => {
+    if (step._pending) return;
+    const typeLabel = escapeHtml(TYPE_LABELS[step.step_type] || step.step_type || '');
+    const body = printStepBodyForPdf(step);
+    parts.push(
+      `<section class="print-step"><p class="print-step-num">Step ${idx + 1}</p><h2>${escapeHtml(step.title || '')}</h2><p class="print-step-type">${typeLabel}</p>${body}</section>`
+    );
+  });
+  parts.push('</div>');
+  return parts.join('');
+}
+
+function handlePrintLessonClick() {
+  if (!lesson || lessonHasPending()) {
+    showPrintBlockedMessage();
+    return;
+  }
+  const surface = document.getElementById('lesson-print-surface');
+  if (surface) {
+    surface.innerHTML = buildLessonPrintHtml();
+    surface.setAttribute('aria-hidden', 'false');
+  }
+  window.print();
+}
+
+/** Stable JSON for the visible step body so polling can skip replacing iframes when other steps update. */
+function stepBodySignature(lesson, index) {
+  const step = lesson.steps[index];
+  if (!step) return '';
+  const v = {
+    _pending: !!step._pending,
+    title: step.title ?? '',
+    step_type: step.step_type ?? '',
+    content: step.content ?? '',
+  };
+  if (step.video) {
+    v.video = {
+      embed_url: step.video.embed_url,
+      url: step.video.url,
+      title: step.video.title,
+      watch_prompt: step.video.watch_prompt,
+    };
+  } else {
+    v.video = null;
+  }
+  if (step.game) {
+    v.game = {
+      embed_path: step.game.embed_path,
+      title: step.game.title,
+      instructions: step.game.instructions,
+      estimated_minutes: step.game.estimated_minutes,
+    };
+  } else {
+    v.game = null;
+  }
+  v.assessment = step.assessment ?? null;
+  return JSON.stringify(v);
+}
+
+function stepFooterSignature(lesson, index) {
+  const isLast = index === lesson.steps.length - 1;
+  const nextStep = !isLast ? lesson.steps[index + 1] : null;
+  return JSON.stringify({
+    isFirst: index === 0,
+    isLast,
+    nextBlocked: !!(nextStep && nextStep._pending),
+    submitBlocked: lesson.steps.some((s) => s._pending === true),
+  });
+}
+
+function buildStepFooterButtonsHtml(index) {
+  const isLast = index === lesson.steps.length - 1;
+  const isFirst = index === 0;
+  const nextStep = !isLast ? lesson.steps[index + 1] : null;
+  const nextIsGenerating = !!(nextStep && nextStep._pending);
+  const submitBlocked = lessonHasPending();
+  const nextTitle = nextIsGenerating
+    ? 'The next section is still generating. Click for a short message — it will open when ready.'
+    : '';
+  return `
+        ${!isFirst ? `<button type="button" class="btn btn-secondary" onclick="renderStep(${index - 1})">← Back</button>` : '<span></span>'}
+        ${isLast
+          ? `<button type="button" class="btn btn-primary" id="submit-assessment-btn" onclick="submitAssessment()" ${submitBlocked ? 'disabled title="Wait until all steps finish loading"' : ''}>Submit & See Results →</button>`
+          : `<button type="button" class="btn btn-primary" id="next-step-btn" onclick="handleNextStepClick(${index})"${nextTitle ? ` title="${escapeHtml(nextTitle)}"` : ''}>Next →</button>`
+        }
+  `;
+}
+
+function patchStepFooter(index) {
+  const wrap = document.querySelector('#lesson-container .step-nav-buttons');
+  if (wrap) wrap.innerHTML = buildStepFooterButtonsHtml(index);
+  else renderStepMain(index);
+}
+
+function syncProgressAndNav(index) {
+  currentStep = index;
+  document.querySelectorAll('.step-nav-item').forEach((el, i) => {
+    el.classList.remove('active', 'completed');
+    if (i < index && !lesson.steps[i]._pending) el.classList.add('completed');
+    if (i === index) el.classList.add('active');
+  });
+  const total = lesson.steps.length;
+  const readyCount = lesson.steps.filter((s) => !s._pending).length;
+  const pct = total ? Math.round((readyCount / total) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = pct + '% ready' + (lessonHasPending() ? ' · more loading' : '');
+  const progressWrap = document.getElementById('progress-bar-container');
+  if (progressWrap) {
+    const pending = lessonHasPending();
+    progressWrap.classList.toggle('progress-bar-container--generating', pending);
+    progressWrap.setAttribute('aria-busy', pending ? 'true' : 'false');
+  }
+  updatePrintButtonState();
+}
+
+function stopPartialPoll() {
+  if (partialPollTimer) {
+    clearInterval(partialPollTimer);
+    partialPollTimer = null;
+  }
+}
+
+async function refreshLessonFromServer() {
+  try {
+    const res = await fetch(`/api/lesson/${SESSION_ID}`);
+    if (res.status === 202) return;
+    const next = await res.json();
+    const idx = currentStep;
+    const prevBody = lesson ? stepBodySignature(lesson, idx) : '';
+    const prevFoot = lesson ? stepFooterSignature(lesson, idx) : '';
+    lesson = next;
+    buildSidebar();
+    syncProgressAndNav(idx);
+    const newBody = stepBodySignature(lesson, idx);
+    const newFoot = stepFooterSignature(lesson, idx);
+    if (newBody !== prevBody) {
+      renderStepMain(idx);
+    } else if (newFoot !== prevFoot) {
+      patchStepFooter(idx);
+    }
+    if (!lessonHasPending()) stopPartialPoll();
+  } catch (_) { /* ignore */ }
+}
+
+function startPartialPoll() {
+  stopPartialPoll();
+  if (!lessonHasPending()) return;
+  partialPollTimer = setInterval(refreshLessonFromServer, 2000);
+}
+
+async function loadLesson() {
+  const res = await fetch(`/api/lesson/${SESSION_ID}`);
+  if (res.status === 202) {
+    setTimeout(loadLesson, 2000);
+    return;
+  }
+  lesson = await res.json();
+  buildSidebar();
+  renderStep(0);
+  startPartialPoll();
+}
+
+function buildSidebar() {
+  const nav = document.getElementById('step-nav-list');
+  const idx = currentStep;
+  nav.innerHTML = lesson.steps.map((step, i) => `
+    <div class="step-nav-item ${i === idx ? 'active' : ''}${step._pending ? ' pending' : ''}" id="nav-${i}" onclick="renderStep(${i})">
+      <div class="step-nav-dot">${i + 1}</div>
+      <span>${escapeHtml(step.title)}</span>
+    </div>
+  `).join('');
+}
+
+function renderStep(index) {
+  syncProgressAndNav(index);
+  renderStepMain(index);
+}
+
+function renderStepMain(index) {
+  const step = lesson.steps[index];
+  const container = document.getElementById('lesson-container');
+
+  const badgeClass = BADGE_CLASSES[step.step_type] || 'badge-content';
+  const typeLabel = TYPE_LABELS[step.step_type] || step.step_type;
+
+  let bodyHtml = '';
+
+  if (step._pending) {
+    bodyHtml = `
+      <div class="step-pending-banner">
+        This section is still being personalized. It will appear automatically in a few seconds — or refresh the page.
+      </div>
+      <div class="lesson-loading" style="padding:2rem 0">
+        <div class="loading-spinner-sm"></div>
+        <p style="color:var(--slate)">Generating step ${index + 1}…</p>
+      </div>
+    `;
+  } else if (['intro', 'content', 'reflection'].includes(step.step_type)) {
+    bodyHtml = `<div class="step-body">${markdownToHtml(step.content || '')}</div>`;
+  } else if (step.step_type === 'video' && step.video) {
+    const embedSrc = youtubeEmbedSrc(step.video.embed_url || '');
+    const vtitle = escapeHtml(step.video.title || 'Lesson video');
+    const watchHref = escapeHtml(step.video.url || '');
+    bodyHtml = `
+      <p class="video-meta">
+        <strong>${vtitle}</strong>
+        ${watchHref ? ` · <a href="${watchHref}" target="_blank" rel="noopener noreferrer">Open on YouTube</a>` : ''}
+      </p>
+      <div class="video-container">
+        <iframe
+          title="${vtitle}"
+          src="${escapeHtml(embedSrc)}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+          loading="lazy"></iframe>
+      </div>
+      ${step.video.watch_prompt ? `<div class="watch-prompt">👀 <strong>Watch for:</strong> ${escapeHtml(step.video.watch_prompt)}</div>` : ''}
+      ${step.content ? `<div class="step-body" style="margin-top:1rem">${markdownToHtml(step.content)}</div>` : ''}
+    `;
+  } else if (step.step_type === 'game' && step.game) {
+    const gSrc = gameIframeSrc(step.game.embed_path || '');
+    const gTitle = escapeHtml(step.game.title || 'Activity');
+    bodyHtml = `
+      <div class="step-body" style="margin-bottom:1rem">${markdownToHtml(step.game.instructions || '')}</div>
+      <p class="video-meta"><strong>${gTitle}</strong>${step.game.estimated_minutes != null ? ` · ~${escapeHtml(String(step.game.estimated_minutes))} min` : ''}</p>
+      <div class="game-embed">
+        <iframe
+          title="${gTitle}"
+          src="${escapeHtml(gSrc)}"
+          sandbox="allow-scripts allow-same-origin"
+          scrolling="no"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+    `;
+  } else if (['quiz', 'open_question', 'challenge'].includes(step.step_type) && step.assessment) {
+    bodyHtml = renderAssessment(step.assessment, index);
+  }
+
+  container.innerHTML = `
+    <div class="step-card">
+      <div class="step-header">
+        <span class="step-type-badge ${badgeClass}">${typeLabel}</span>
+        <h2 class="step-title">${escapeHtml(step.title)}</h2>
+      </div>
+      <div class="step-body-wrapper">${bodyHtml}</div>
+      <div class="step-nav-buttons">
+        ${buildStepFooterButtonsHtml(index)}
+      </div>
+    </div>
+  `;
+}
+
+function renderAssessment(assessment, stepIndex) {
+  if (!assessment.questions) return '<p>No questions available.</p>';
+  return assessment.questions.map((q, qi) => {
+    const qId = `q_${stepIndex}_${qi}`;
+    if (q.type === 'multiple_choice') {
+      return `
+        <div class="question-block">
+          <p class="question-text">${qi + 1}. ${q.question}</p>
+          <ul class="option-list">
+            ${(q.options || []).map((opt, oi) => `
+              <li class="option-item" id="${qId}_${oi}" onclick="selectOption('${qId}', ${oi}, '${opt.replace(/'/g,"\\'")}', ${stepIndex}, ${qi})">
+                <span>${String.fromCharCode(65 + oi)}.</span> ${opt}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="question-block">
+          <p class="question-text">${qi + 1}. ${q.question}</p>
+          <textarea class="short-answer-textarea" placeholder="Write your answer here..."
+            onchange="recordAnswer(${stepIndex}, ${qi}, this.value)"></textarea>
+        </div>
+      `;
+    }
+  }).join('');
+}
+
+function selectOption(qId, optIndex, value, stepIndex, qIndex) {
+  // Visual selection
+  const q = document.querySelectorAll(`[id^="${qId}_"]`);
+  q.forEach(el => el.classList.remove('selected'));
+  document.getElementById(`${qId}_${optIndex}`).classList.add('selected');
+  recordAnswer(stepIndex, qIndex, value);
+}
+
+function recordAnswer(stepIndex, qIndex, value) {
+  if (!answers[stepIndex]) answers[stepIndex] = {};
+  answers[stepIndex][qIndex] = value;
+}
+
+function normalizeReviewTopics(topics) {
+  if (topics == null) return [];
+  if (Array.isArray(topics)) return topics.map(String);
+  if (typeof topics === 'string') return topics.trim() ? [topics] : [];
+  return [];
+}
+
+function formatSubmitError(detail) {
+  if (detail == null) return 'Could not grade your answers. Please try again.';
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d) => (typeof d === 'object' && d.msg ? d.msg : String(d))).join(' ');
+  }
+  return String(detail);
+}
+
+async function submitAssessment() {
+  if (lessonHasPending()) {
+    alert('Please wait until every lesson section has finished loading before submitting.');
+    return;
+  }
+  const btn = document.getElementById('submit-assessment-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Grading…';
+  }
+
+  const flatAnswers = Object.entries(answers).flatMap(([si, qs]) =>
+    Object.entries(qs).map(([qi, value]) => ({
+      step_index: parseInt(si, 10),
+      question_index: parseInt(qi, 10),
+      answer: value
+    }))
+  );
+
+  try {
+    const res = await fetch('/api/submit-assessment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: SESSION_ID, answers: flatAnswers })
+    });
+    let result = {};
+    try {
+      result = await res.json();
+    } catch {
+      result = {};
+    }
+    if (!res.ok) {
+      const msg = formatSubmitError(result.detail);
+      const container = document.getElementById('lesson-container');
+      container.innerHTML = `
+        <div class="step-card results-card">
+          <p style="color:#C53030;margin-bottom:1rem;font-weight:600">Something went wrong</p>
+          <p style="color:var(--slate);line-height:1.6;margin-bottom:1.5rem">${msg}</p>
+          <button type="button" class="btn btn-primary" onclick="renderStep(${currentStep})">Try again</button>
+        </div>
+      `;
+      updatePrintButtonState();
+      return;
+    }
+    renderResults(result);
+  } catch (e) {
+    const container = document.getElementById('lesson-container');
+    container.innerHTML = `
+      <div class="step-card results-card">
+        <p style="color:#C53030;margin-bottom:1rem;font-weight:600">Network error</p>
+        <p style="color:var(--slate);line-height:1.6;margin-bottom:1.5rem">${e.message || 'Check your connection and try again.'}</p>
+        <button type="button" class="btn btn-primary" onclick="renderStep(${currentStep})">Try again</button>
+      </div>
+    `;
+    updatePrintButtonState();
+  }
+}
+
+function renderResults(result) {
+  const reviewTopics = normalizeReviewTopics(result.review_topics);
+  const gradeLetter =
+    result.grade != null && result.grade !== '' ? String(result.grade) : '—';
+  const gradeForClass =
+    result.grade != null && result.grade !== '' ? String(result.grade).trim() : 'B';
+  const gradeClass = `grade-${gradeForClass.charAt(0).toUpperCase()}`;
+  document.getElementById('lesson-container').innerHTML = `
+    <div class="step-card results-card">
+      <div class="grade-circle ${gradeClass}">${gradeLetter}</div>
+      <h2 style="font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--navy);margin-bottom:0.5rem">
+        ${result.score ?? '—'} / ${result.total_points ?? '—'} points
+      </h2>
+      <p style="color:var(--slate);margin-bottom:1.5rem">${result.percentage ?? 0}% — ${result.mastery_level || ''}</p>
+      <div style="background:var(--cream);border-radius:12px;padding:1.5rem;text-align:left;margin-bottom:1.5rem;line-height:1.7">
+        ${result.overall_feedback || ''}
+      </div>
+      ${reviewTopics.length ? `
+        <div style="text-align:left">
+          <p style="font-weight:600;color:var(--navy);margin-bottom:0.5rem">📚 Review These Topics:</p>
+          ${reviewTopics.map(t => `<span style="display:inline-block;background:var(--gold-light);color:var(--navy);padding:0.25rem 0.75rem;border-radius:50px;margin:0.25rem;font-size:0.85rem">${t}</span>`).join('')}
+        </div>
+      ` : ''}
+      <div style="margin-top:2rem">
+        <a href="/" class="btn btn-primary">Start a New Lesson →</a>
+      </div>
+    </div>
+  `;
+  updatePrintButtonState();
+}
+
+function markdownToHtml(text) {
+  if (!text) return '';
+  const esc = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const inline = (s) => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  const lines = String(text).replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let i = 0;
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      out.push('</ul>');
+      inList = false;
+    }
+  };
+
+  const isTableSeparator = (line) =>
+    /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim());
+
+  while (i < lines.length) {
+    const raw = lines[i];
+    const line = raw.trim();
+
+    if (!line) {
+      closeList();
+      i += 1;
+      continue;
+    }
+
+    if (line.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1])) {
+      closeList();
+      const headerCells = line.split('|').map((c) => c.trim()).filter(Boolean);
+      i += 2;
+      const bodyRows = [];
+      while (i < lines.length && lines[i].trim().includes('|') && lines[i].trim()) {
+        const cells = lines[i].split('|').map((c) => c.trim()).filter(Boolean);
+        if (cells.length) bodyRows.push(cells);
+        i += 1;
+      }
+
+      out.push('<div class="md-table-wrap"><table class="md-table"><thead><tr>');
+      headerCells.forEach((c) => out.push(`<th>${inline(c)}</th>`));
+      out.push('</tr></thead><tbody>');
+      bodyRows.forEach((row) => {
+        out.push('<tr>');
+        row.forEach((c) => out.push(`<td>${inline(c)}</td>`));
+        out.push('</tr>');
+      });
+      out.push('</tbody></table></div>');
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      closeList();
+      out.push(`<h3>${inline(line.slice(4))}</h3>`);
+      i += 1;
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      closeList();
+      out.push(`<h2>${inline(line.slice(3))}</h2>`);
+      i += 1;
+      continue;
+    }
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        out.push('<ul>');
+        inList = true;
+      }
+      out.push(`<li>${inline(line.slice(2))}</li>`);
+      i += 1;
+      continue;
+    }
+
+    closeList();
+    out.push(`<p>${inline(line)}</p>`);
+    i += 1;
+  }
+
+  closeList();
+  return out.join('');
+}
+
+(function wirePrintLesson() {
+  const btn = document.getElementById('print-lesson-btn');
+  if (!btn) return;
+  btn.addEventListener('click', handlePrintLessonClick);
+})();
+
+loadLesson();
+</script>
+{% endblock %}

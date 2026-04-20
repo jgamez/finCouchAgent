@@ -1,0 +1,715 @@
+[
+  {
+    "id": "game-budget-blaster",
+    "title": "Need or Want Blaster",
+    "description": "Sort everyday items as needs or wants. Builds budgeting instincts.",
+    "learning_objectives": [
+      "Tell needs vs wants",
+      "Connect choices to limited income"
+    ],
+    "game_type": "categorization",
+    "topics": [
+      "budgeting",
+      "personal finance",
+      "money management"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school"
+    ],
+    "proficiency_levels": [
+      "beginner"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/budget-blaster/index.html"
+  },
+  {
+    "id": "game-savings-simulator",
+    "title": "Savings sprint",
+    "description": "Weekly save-or-spend choices toward a $120 goal.",
+    "learning_objectives": [
+      "See trade-offs",
+      "Link habits to outcomes"
+    ],
+    "game_type": "simulation",
+    "topics": [
+      "saving",
+      "goals",
+      "emergency fund"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 6,
+    "embed_path": "/static/games/savings-simulator/index.html"
+  },
+  {
+    "id": "game-market-maker",
+    "title": "Mini market",
+    "description": "Buy, sell, or hold through random price moves.",
+    "learning_objectives": [
+      "Price swings happen",
+      "Portfolio = cash + shares"
+    ],
+    "game_type": "simulation",
+    "topics": [
+      "investing",
+      "stock market"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate",
+      "advanced"
+    ],
+    "estimated_minutes": 7,
+    "embed_path": "/static/games/market-maker/index.html"
+  },
+  {
+    "id": "game-credit-challenge",
+    "title": "Credit score meter",
+    "description": "Choices nudge a starting score up or down.",
+    "learning_objectives": [
+      "Behaviors affect credit",
+      "Think long term"
+    ],
+    "game_type": "decision",
+    "topics": [
+      "credit",
+      "borrowing",
+      "credit score"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 8,
+    "embed_path": "/static/games/credit-challenge/index.html"
+  },
+  {
+    "id": "game-compound-explorer",
+    "title": "Compound explorer",
+    "description": "Sliders for principal, rate, time, and monthly adds.",
+    "learning_objectives": [
+      "See compounding",
+      "Compare scenarios"
+    ],
+    "game_type": "calculator",
+    "topics": [
+      "compound interest",
+      "saving",
+      "investing"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate",
+      "advanced"
+    ],
+    "estimated_minutes": 6,
+    "embed_path": "/static/games/compound-explorer/index.html"
+  },
+  {
+    "id": "game-portfolio-puzzle",
+    "title": "Portfolio shock",
+    "description": "Stock/bond mix vs one simulated year of returns.",
+    "learning_objectives": [
+      "Mix changes outcomes",
+      "Diversification idea"
+    ],
+    "game_type": "simulation",
+    "topics": [
+      "investing",
+      "diversification",
+      "portfolio"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate",
+      "advanced"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/portfolio-puzzle/index.html"
+  },
+  {
+    "id": "game-tax-type-match",
+    "title": "Tax quick quiz",
+    "description": "Match scenarios to sales, income, or property tax.",
+    "learning_objectives": [
+      "Know major tax types",
+      "Spot them in life"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "taxes",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/tax-type-match/index.html"
+  },
+  {
+    "id": "game-insurance-pick",
+    "title": "Coverage picker",
+    "description": "Pick the best insurance type for short scenarios.",
+    "learning_objectives": [
+      "Match risk to coverage",
+      "Core products"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "insurance",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 6,
+    "embed_path": "/static/games/insurance-pick/index.html"
+  },
+  {
+    "id": "game-loan-compare",
+    "title": "Loan total cost",
+    "description": "Compare two loan stories and reason about APR.",
+    "learning_objectives": [
+      "APR matters",
+      "Read terms"
+    ],
+    "game_type": "decision",
+    "topics": [
+      "credit",
+      "borrowing",
+      "student loans"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/loan-compare/index.html"
+  },
+  {
+    "id": "game-crypto-myths",
+    "title": "Crypto fact check",
+    "description": "True/false on volatility, scams, and custody.",
+    "learning_objectives": [
+      "Risk awareness",
+      "Skepticism toward hype"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "cryptocurrency",
+      "digital assets",
+      "investing"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate",
+      "advanced"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/crypto-myths/index.html"
+  },
+  {
+    "id": "game-profit-blitz",
+    "title": "Lemonade profit",
+    "description": "Quick revenue minus variable and fixed costs.",
+    "learning_objectives": [
+      "Profit = revenue \u2212 costs",
+      "Unit economics"
+    ],
+    "game_type": "puzzle",
+    "topics": [
+      "entrepreneurship",
+      "budgeting"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/profit-blitz/index.html"
+  },
+  {
+    "id": "game-emergency-steps",
+    "title": "Emergency fund order",
+    "description": "Tap steps in a sensible order.",
+    "learning_objectives": [
+      "Process for starter fund",
+      "Automation"
+    ],
+    "game_type": "ordering",
+    "topics": [
+      "saving",
+      "emergency fund",
+      "insurance"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/emergency-steps/index.html"
+  },
+  {
+    "id": "game-paycheck-puzzle",
+    "title": "Paycheck vocabulary",
+    "description": "Match gross, net, withholding, FICA.",
+    "learning_objectives": [
+      "Read a paystub",
+      "Where money goes"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "taxes",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 6,
+    "embed_path": "/static/games/paycheck-puzzle/index.html"
+  },
+  {
+    "id": "game-opportunity-cost",
+    "title": "One choice",
+    "description": "Concert vs savings \u2014 see the trade-off.",
+    "learning_objectives": [
+      "Every choice has a cost",
+      "Goals compete"
+    ],
+    "game_type": "decision",
+    "topics": [
+      "budgeting",
+      "saving",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/opportunity-cost/index.html"
+  },
+  {
+    "id": "game-rule-of-72",
+    "title": "Rule of 72",
+    "description": "Estimate doubling time from a rate.",
+    "learning_objectives": [
+      "Rule of 72 uses",
+      "Time and rate"
+    ],
+    "game_type": "calculator",
+    "topics": [
+      "compound interest",
+      "investing"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/rule-of-72/index.html"
+  },
+  {
+    "id": "game-debt-strategy",
+    "title": "Debt strategies",
+    "description": "Avalanche, snowball, or bad habits.",
+    "learning_objectives": [
+      "Compare payoff strategies",
+      "Avoid harmful choices"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "credit",
+      "borrowing",
+      "student loans"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/debt-strategy/index.html"
+  },
+  {
+    "id": "game-inflation-shop",
+    "title": "Inflation basket",
+    "description": "Project a price with steady inflation.",
+    "learning_objectives": [
+      "Money loses purchasing power",
+      "Why real returns matter"
+    ],
+    "game_type": "calculator",
+    "topics": [
+      "investing",
+      "saving",
+      "compound interest"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/inflation-shop/index.html"
+  },
+  {
+    "id": "game-goal-ranker",
+    "title": "Goal priority",
+    "description": "Tap goals in a suggested planning order.",
+    "learning_objectives": [
+      "Prioritize when cash is tight",
+      "Discuss context"
+    ],
+    "game_type": "ordering",
+    "topics": [
+      "saving",
+      "budgeting",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/goal-ranker/index.html"
+  },
+  {
+    "id": "game-scam-spotter",
+    "title": "Scam spotter",
+    "description": "Tap phishing-style red flags.",
+    "learning_objectives": [
+      "Spot urgency and odd payments",
+      "Protect information"
+    ],
+    "game_type": "puzzle",
+    "topics": [
+      "cryptocurrency",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/scam-spotter/index.html"
+  },
+  {
+    "id": "game-side-hustle-balance",
+    "title": "Gig hours",
+    "description": "Slide weekly gig hours \u2014 balance with life.",
+    "learning_objectives": [
+      "Time is a budget",
+      "Side income trade-offs"
+    ],
+    "game_type": "simulation",
+    "topics": [
+      "entrepreneurship",
+      "budgeting"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/side-hustle-balance/index.html"
+  },
+  {
+    "id": "game-wants-needs-speed",
+    "title": "Speed sort",
+    "description": "Quick need vs want rounds.",
+    "learning_objectives": [
+      "Fast classification",
+      "Habit building"
+    ],
+    "game_type": "categorization",
+    "topics": [
+      "budgeting",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school"
+    ],
+    "proficiency_levels": [
+      "beginner"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/wants-needs-speed/index.html"
+  },
+  {
+    "id": "game-pay-yourself-first",
+    "title": "Pay yourself first",
+    "description": "Slider for savings % of a paycheck model.",
+    "learning_objectives": [
+      "Save before spending",
+      "Even small % helps"
+    ],
+    "game_type": "simulation",
+    "topics": [
+      "saving",
+      "budgeting"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/pay-yourself-first/index.html"
+  },
+  {
+    "id": "game-entrepreneur-margin",
+    "title": "Unit margin",
+    "description": "Sticker sale unit economics.",
+    "learning_objectives": [
+      "Revenue \u2212 variable cost",
+      "Think fixed costs too"
+    ],
+    "game_type": "puzzle",
+    "topics": [
+      "entrepreneurship",
+      "investing"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 3,
+    "embed_path": "/static/games/entrepreneur-margin/index.html"
+  },
+  {
+    "id": "game-scholarship-hunt",
+    "title": "Aid mix quiz",
+    "description": "Grants, loans, and FAFSA true/false.",
+    "learning_objectives": [
+      "Aid types differ",
+      "Forms matter"
+    ],
+    "game_type": "quiz",
+    "topics": [
+      "student loans",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/scholarship-hunt/index.html"
+  },
+  {
+    "id": "game-budget-percent",
+    "title": "50 / 30 / 20 check",
+    "description": "Plug in dollar splits for a sample income.",
+    "learning_objectives": [
+      "Benchmark budget shapes",
+      "Flex to your life"
+    ],
+    "game_type": "calculator",
+    "topics": [
+      "budgeting",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/budget-percent/index.html"
+  },
+  {
+    "id": "game-risk-vs-return",
+    "title": "Risk ladder",
+    "description": "Order assets from lower to higher typical risk.",
+    "learning_objectives": [
+      "Risk and return relationship",
+      "No guarantees"
+    ],
+    "game_type": "ordering",
+    "topics": [
+      "investing",
+      "stock market",
+      "cryptocurrency"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "intermediate",
+      "advanced"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/risk-vs-return/index.html"
+  },
+  {
+    "id": "game-founder-floor-rush",
+    "title": "Founder & partner rush",
+    "description": "Co-op Pac-style maze: two players clear revenue dots while overhead ghosts hunt you.",
+    "learning_objectives": [
+      "Feel fixed vs variable pressure in a hustle",
+      "Team roles in a tiny business"
+    ],
+    "game_type": "arcade",
+    "topics": [
+      "entrepreneurship",
+      "budgeting",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 6,
+    "embed_path": "/static/games/founder-floor-rush/index.html"
+  },
+  {
+    "id": "game-aid-maze-duo",
+    "title": "Aid choice sprint",
+    "description": "Quick tap: label each money move as smart aid strategy or risky — FAFSA, federal vs private, and reading award letters.",
+    "learning_objectives": [
+      "Spot smart aid habits vs costly shortcuts",
+      "Grants and federal loans before expensive private debt"
+    ],
+    "game_type": "decision",
+    "topics": [
+      "student loans",
+      "personal finance"
+    ],
+    "audience_levels": [
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 4,
+    "embed_path": "/static/games/aid-maze-duo/index.html"
+  },
+  {
+    "id": "game-expense-tracker-showdown",
+    "title": "Expense Tracker Showdown",
+    "description": "Flip cards to pair budget icons with tracking habits — larger icons and a strong 3D flip.",
+    "learning_objectives": [
+      "Connect visual cues to expense-tracking actions",
+      "Build a simple weekly money-check habit"
+    ],
+    "game_type": "puzzle",
+    "topics": [
+      "budgeting",
+      "personal finance",
+      "money management"
+    ],
+    "audience_levels": [
+      "middle_school",
+      "high_school",
+      "college"
+    ],
+    "proficiency_levels": [
+      "beginner",
+      "intermediate"
+    ],
+    "estimated_minutes": 5,
+    "embed_path": "/static/games/expense-tracker-showdown/index.html"
+  }
+]

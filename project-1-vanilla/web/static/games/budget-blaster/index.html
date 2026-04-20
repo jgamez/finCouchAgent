@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sort the chips</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Drag chips to bins</h1><p class="sub">Needs 🏠 vs wants ✨ — drop each chip in the right zone.</p>
+<div class="score" id="sc"></div>
+<div class="chip-tray" id="tray"></div>
+<div class="bins-row">
+<div class="drop-bin" data-cat="need" id="bn"><h3>Needs</h3></div>
+<div class="drop-bin" data-cat="want" id="bw"><h3>Wants</h3></div>
+</div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const items=[{t:"🍞 Groceries",c:"need",p:0},{t:"🎮 New console",c:"want",p:0},{t:"🏠 Rent",c:"need",p:0},{t:"🎤 Concert (optional)",c:"want",p:0},{t:"🚌 Bus pass",c:"need",p:0},{t:"👟 Extra sneakers",c:"want",p:0}];
+let placed=0,good=0;
+function tray(){const tr=document.getElementById('tray');tr.innerHTML='';
+items.forEach((it,i)=>{if(it.p)return;const d=document.createElement('div');d.className='drag-chip';d.draggable=true;d.textContent=it.t;d.dataset.i=i;
+d.ondragstart=e=>e.dataTransfer.setData('text/plain',i);tr.appendChild(d);});
+document.getElementById('sc').textContent='Placed '+placed+' / '+items.length;}
+function wire(id){const el=document.getElementById(id);
+el.ondragover=e=>{e.preventDefault();el.classList.add('drag-over');};
+el.ondragleave=()=>el.classList.remove('drag-over');
+el.ondrop=e=>{e.preventDefault();el.classList.remove('drag-over');
+const i=+e.dataTransfer.getData('text/plain');const it=items[i];if(it.p)return;
+it.p=1;placed++;if(it.c===el.dataset.cat)good++;
+const s=document.createElement('span');s.className='drag-chip in-bin';s.style.fontSize='0.95rem';s.textContent=it.t;el.appendChild(s);tray();
+if(placed===items.length){const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add(good===items.length?'good':'bad');
+fb.textContent=good===items.length?'Perfect!':'Score '+good+'/'+items.length+' — needs are essentials; wants are extras.';}};}
+wire('bn');wire('bw');tray();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

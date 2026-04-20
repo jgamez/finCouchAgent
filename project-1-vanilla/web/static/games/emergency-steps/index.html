@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reorder the ladder</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Drag into order</h1><p class="sub">Top = do first. Goal: track → goal → automate → rules.</p>
+<div class="sort-list" id="lst"></div>
+<button class="btn btn-primary" id="chk" style="margin-top:10px">Check order</button>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const ideal=["Track spending for 2 weeks","Set a starter goal (~$500)","Automate savings transfer","Emergencies only"];
+let items=ideal.slice().sort(()=>Math.random()-.5);let drag=null;
+function paint(){const lst=document.getElementById('lst');lst.innerHTML='';
+items.forEach((t,idx)=>{const d=document.createElement('div');d.className='sort-item';d.draggable=true;d.textContent=(idx+1)+'. '+t;d.dataset.idx=idx;
+d.ondragstart=()=>{drag=idx;d.classList.add('dragging');};
+d.ondragend=()=>d.classList.remove('dragging');
+d.ondragover=e=>e.preventDefault();
+d.ondrop=()=>{if(drag===null)return;const to=+d.dataset.idx;const x=items.splice(drag,1)[0];items.splice(to,0,x);drag=null;paint();};
+lst.appendChild(d);});}
+document.getElementById('chk').onclick=()=>{const ok=items.every((t,i)=>t===ideal[i]);const fb=document.getElementById('fb');fb.classList.remove('hidden');
+fb.classList.add(ok?'good':'bad');fb.textContent=ok?'Perfect ladder!':'Not quite — try: track, goal, automate, rules.';};
+paint();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

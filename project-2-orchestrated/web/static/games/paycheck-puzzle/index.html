@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Match stubs</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Icon ↔ label</h1><p class="sub">Pick one emoji tile, then one definition — make 4 pairs.</p>
+<div class="score" id="sc">Pairs: 0 / 4</div>
+<div class="match-grid-2" id="left"></div>
+<div class="match-grid-2" id="right"></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const left=[{k:0,g:'💵',t:'Gross pay'},{k:1,g:'🏛️',t:'Income tax withheld'},{k:2,g:'🧾',t:'FICA / payroll taxes'},{k:3,g:'✅',t:'Net pay'}];
+const right=[{k:0,d:'Before taxes'},{k:1,d:'Federal withholding'},{k:2,d:'Social Security / Medicare'},{k:3,d:'Deposited to you'}];
+let selL=null,selR=null,pairs=0;const matched=new Set();
+function shuf(a){return a.slice().sort(()=>Math.random()-.5);}
+function draw(){document.getElementById('left').innerHTML='';document.getElementById('right').innerHTML='';
+shuf(left.filter(x=>!matched.has(x.k))).forEach(x=>{const b=document.createElement('button');b.type='button';b.className='pick-tile';b.textContent=x.g;b.dataset.k=x.k;
+b.onclick=()=>{document.querySelectorAll('#left .pick-tile').forEach(z=>z.classList.remove('on'));b.classList.add('on');selL=x.k;tryPair();};document.getElementById('left').appendChild(b);});
+shuf(right.filter(x=>!matched.has(x.k))).forEach(x=>{const b=document.createElement('button');b.type='button';b.className='pick-tile';b.style.fontSize='0.78rem';b.textContent=x.d;b.dataset.k=x.k;
+b.onclick=()=>{document.querySelectorAll('#right .pick-tile').forEach(z=>z.classList.remove('on'));b.classList.add('on');selR=x.k;tryPair();};document.getElementById('right').appendChild(b);});}
+function tryPair(){if(selL===null||selR===null||selL!==selR)return;
+matched.add(selL);pairs++;selL=selR=null;document.getElementById('sc').textContent='Pairs: '+pairs+' / 4';
+if(pairs===4){const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add('good');fb.textContent='Paycheck decoded!';}
+else draw();}
+draw();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pick the card</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Tap the cheaper loan</h1><p class="sub">Same $3k / 24 mo — which tile is usually gentler on your wallet?</p>
+<div class="hero-pick">
+<button type="button" class="hero-tile" id="a">📄<small>Loan A<br>8% APR</small></button>
+<button type="button" class="hero-tile" id="b">📄<small>Loan B<br>0% then 18%</small></button>
+</div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+document.getElementById('a').onclick=()=>{const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add('good');
+fb.textContent='Often yes — steady lower APR beats a teaser that jumps. Always read fees and the full amortization.';};
+document.getElementById('b').onclick=()=>{const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add('bad');
+fb.textContent='Promo 0% can cost more once the rate resets. Compare total interest paid, not just the first year.';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

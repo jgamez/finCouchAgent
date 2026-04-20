@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Credit gauge</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Credit gauge</h1><p class="sub">Smart moves fill the bar. Start 680.</p>
+<div class="score">Score <span id="score">680</span></div>
+<div class="gauge-track"><div class="gauge-fill" id="gf"></div></div>
+<div class="card" id="card"></div>
+<script>
+const qs=[{t:"Pay at least the minimum on time?",good:15,bad:-25},{t:"Open 3 new cards same week?",good:-35,bad:5},{t:"Keep card use under ~30% of limit?",good:20,bad:-15},{t:"Close your oldest card?",good:-30,bad:8},{t:"Check free credit report yearly?",good:10,bad:-5}];
+let sc=680,i=0;
+function bar(){document.getElementById('score').textContent=sc;
+const w=Math.min(100,Math.max(6,(sc-300)/5.5));document.getElementById('gf').style.width=w+'%';}
+function show(){if(i>=qs.length){document.getElementById('card').innerHTML='<p><strong>Final: '+sc+'</strong></p>';return;}
+const q=qs[i];
+document.getElementById('card').innerHTML='<p>'+q.t+'</p><div class="hero-pick"><button type="button" class="hero-tile" id="g">👍<small>Good move</small></button><button type="button" class="hero-tile" id="b">👎<small>Risky</small></button></div>';
+document.getElementById('g').onclick=()=>{sc+=q.good;i++;bar();show();};
+document.getElementById('b').onclick=()=>{sc+=q.bad;i++;bar();show();};}
+bar();show();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

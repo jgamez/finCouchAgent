@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Growth tower</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Stack the years</h1><p class="sub">Dial inputs, then grow a bar for each year of compounding.</p>
+<label>Start $</label><input type="number" id="p" value="1000">
+<label>Rate % / yr</label><input type="number" id="r" value="6">
+<label>Years (max 12)</label><input type="number" id="t" value="8">
+<label>Monthly add $</label><input type="number" id="m" value="40">
+<button class="btn btn-primary" id="go" style="margin-top:8px">Grow tower</button>
+<div class="tower" id="tw"></div>
+<div class="feedback" id="out"></div>
+<script>
+document.getElementById('go').onclick=()=>{
+let P=+document.getElementById('p').value||0;const yr=+document.getElementById('r').value/100||0;
+const Y=Math.min(12,Math.max(1,+document.getElementById('t').value||1));const M=+document.getElementById('m').value||0;
+const rm=yr/12;const tw=document.getElementById('tw');tw.innerHTML='';const vals=[];
+for(let y=0;y<Y;y++){for(let k=0;k<12;k++)P=(P+M)*(1+rm);vals.push(P);}
+const mx=Math.max(...vals,1);
+vals.forEach(v=>{const layer=document.createElement('div');layer.className='tower-layer';layer.style.width=(28+72*(v/mx))+'%';tw.appendChild(layer);});
+document.getElementById('out').textContent='After '+Y+' yrs ≈ $'+P.toFixed(0)+' — each block is a year-end balance (illustration).';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

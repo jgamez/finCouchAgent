@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flip fact cards</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Flip, then answer</h1><p class="sub">Tap the card to read the claim, then True or False.</p>
+<div class="score" id="sc"></div>
+<div class="perspective" style="max-width:280px;margin:0 auto"><div class="flip-wrap" id="fw"><div class="flip-inner">
+<div class="flip-face flip-front" id="ff">?</div>
+<div class="flip-face flip-back" id="fbk"></div>
+</div></div></div>
+<div class="row" style="justify-content:center;margin-top:12px"><button class="btn btn-good" id="t">True</button><button class="btn btn-bad" id="f">False</button></div>
+<div class="feedback hidden" id="out"></div>
+<script>
+const qs=[["Governments can trace many crypto flows",true],["Prices can swing wildly in a day",true],["FDIC covers crypto like a bank account",false],["Lost keys can mean lost coins forever",true],["“Guaranteed daily returns” is usually a scam",true]];
+let i=0,s=0,flipped=false;
+const fw=document.getElementById('fw');
+function load(){flipped=false;fw.classList.remove('flipped');
+if(i>=qs.length){document.getElementById('fbk').textContent='Done!';document.getElementById('ff').textContent='🏁';document.getElementById('sc').textContent='Score '+s+'/'+qs.length;return;}
+document.getElementById('ff').textContent='Tap to flip';document.getElementById('fbk').textContent=qs[i][0];document.getElementById('sc').textContent='Card '+(i+1)+' / '+qs.length;}
+fw.onclick=()=>{if(i>=qs.length)return;flipped=!flipped;fw.classList.toggle('flipped',flipped);};
+document.getElementById('t').onclick=()=>{if(i>=qs.length||!flipped)return;if(qs[i][1])s++;i++;load();};
+document.getElementById('f').onclick=()=>{if(i>=qs.length||!flipped)return;if(!qs[i][1])s++;i++;load();};
+load();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

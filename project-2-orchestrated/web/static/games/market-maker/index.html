@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart trader</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Live chart</h1><p class="sub">Bars = price each round. Trade $100 cash, 0 shares — 5 rounds.</p>
+<div class="ticker" id="tk">FCX $10 · Cash $100 · Shares 0</div>
+<div class="chart" id="ch"></div>
+<div class="row"><button class="btn btn-primary" id="buy">Buy 1 📈</button>
+<button class="btn btn-secondary" id="sell">Sell 1 📉</button>
+<button class="btn btn-outline" id="hold">Hold ⏸</button></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+let price=10,cash=100,sh=0,r=0;const hist=[10];
+function rnd(){return Math.floor(Math.random()*5)-2;}
+function bars(){const ch=document.getElementById('ch');ch.innerHTML='';
+const mx=Math.max(...hist,12);hist.forEach(p=>{const b=document.createElement('div');b.className='chart-bar';b.style.height=(p/mx*100)+'%';ch.appendChild(b);});}
+function render(){document.getElementById('tk').textContent='FCX $'+price+' · Cash $'+cash+' · Shares '+sh+' · R '+(r+1)+'/5';bars();}
+function end(){const v=cash+sh*price;const fb=document.getElementById('fb');fb.classList.remove('hidden');
+fb.textContent='Portfolio ≈ $'+v.toFixed(0)+(v>=100?' — steady hands!':' — bumpy tape');fb.classList.toggle('good',v>=100);r=99;}
+function step(a){if(r>=5)return;if(a==='buy'&&cash>=price){cash-=price;sh++;}
+else if(a==='sell'&&sh>0){cash+=price;sh--;}
+price=Math.max(3,price+rnd());hist.push(price);r++;render();if(r>=5)end();}
+document.getElementById('buy').onclick=()=>step('buy');
+document.getElementById('sell').onclick=()=>step('sell');
+document.getElementById('hold').onclick=()=>step('hold');
+render();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

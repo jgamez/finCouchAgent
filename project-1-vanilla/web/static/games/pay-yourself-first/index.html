@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Split tubes</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Two tubes</h1><p class="sub">Slide savings % — watch the tubes fill.</p>
+<label>Pay yourself first: <span id="svl">10</span>%</label>
+<input type="range" id="s" min="0" max="30" value="10">
+<div class="split-tubes">
+<div class="tube"><div class="tube-fill save" id="fs"></div></div>
+<div class="tube"><div class="tube-fill spend" id="fp"></div></div>
+</div>
+<div class="score">Save tube · Spend tube</div>
+<div class="feedback" id="o"></div>
+<script>
+document.getElementById('s').oninput=()=>{const sv=+document.getElementById('s').value;document.getElementById('svl').textContent=sv;
+document.getElementById('fs').style.height=sv*3.2+'%';document.getElementById('fp').style.height=(100-sv)*3.2+'%';
+document.getElementById('o').textContent=sv>=10?'Strong habit shape.':sv>0?'Every % trains the reflex.':'Try 1–2% to start.';};
+document.getElementById('s').dispatchEvent(new Event('input'));
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

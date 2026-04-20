@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Price tag flip</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Milk on the shelf</h1><p class="sub">Today $4. Tap the tag to roll 10 years at ~3% inflation.</p>
+<div class="shop-shelf">
+<div class="milk-carton"></div>
+<button type="button" class="price-tag" id="tag">$4.00</button>
+</div>
+<div class="feedback hidden" id="out"></div>
+<script>
+let flipped=false;
+document.getElementById('tag').onclick=()=>{const p=4*Math.pow(1.03,10);flipped=!flipped;
+document.getElementById('tag').textContent=flipped?('$'+p.toFixed(2)):'$4.00';
+const o=document.getElementById('out');o.classList.remove('hidden');
+o.textContent=flipped?'Future tag (illustration) — investing aims to beat inflation over long horizons.':'Today’s sticker price.';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

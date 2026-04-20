@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pop quiz</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Pop-up sort</h1><p class="sub">Tap the floating tile: Need 🏠 or Want ✨ before it vanishes.</p>
+<div class="score" id="sc"></div>
+<div class="pop-area" id="pop"></div>
+<div class="row" style="justify-content:center"><button class="btn btn-good" id="n">Need</button><button class="btn btn-bad" id="w">Want</button></div>
+<div class="feedback" id="fb"></div>
+<script>
+const items=[["🍎 Lunch",true],["🎮 Skin",false],["💡 Electric bill",true],["🎟️ VIP tickets",false],["📚 Class book",true],["☕ Fancy latte habit",false]];
+let i=0,s=0,timer=null,cur=null;
+function spawn(){clearTimeout(timer);const p=document.getElementById('pop');p.innerHTML='';
+if(i>=items.length){document.getElementById('fb').textContent='Final score '+s+' / '+items.length;return;}
+cur=items[i];
+const el=document.createElement('div');el.className='pop-target';el.textContent=cur[0].split(' ')[0];
+el.style.left=(10+Math.random()*58)+'%';el.style.top=(12+Math.random()*40)+'%';p.appendChild(el);
+document.getElementById('sc').textContent='Round '+(i+1)+' / '+items.length+' — tap Need or Want';
+timer=setTimeout(()=>{document.getElementById('sc').textContent='Missed!';i++;spawn();},2000);}
+function grade(need){clearTimeout(timer);if(i>=items.length||!cur)return;const ok=(need===cur[1]);if(ok)s++;
+i++;document.getElementById('sc').textContent=ok?'Nice!':'Not quite';spawn();}
+document.getElementById('n').onclick=()=>grade(true);
+document.getElementById('w').onclick=()=>grade(false);
+spawn();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

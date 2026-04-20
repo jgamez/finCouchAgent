@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Climb the ladder</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Risk ladder</h1><p class="sub">Tap rungs low → high typical risk (5 steps).</p>
+<div class="ladder" id="ld"></div>
+<div class="score" id="sc"></div>
+<script>
+const items=["🏦 Savings","📜 Bonds","📊 Index fund","🎯 One stock","🎲 Speculative crypto"];
+const order=[0,1,2,3,4];let step=0;
+document.getElementById('ld').innerHTML=items.map((t,i)=>'<button type="button" class="ladder-rung" data-i="'+i+'">'+t+'</button>').join('');
+[...document.querySelectorAll('.ladder-rung')].forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(b.classList.contains('done'))return;
+if(i!==order[step]){b.classList.add('wrong');setTimeout(()=>b.classList.remove('wrong'),400);document.getElementById('sc').textContent='Start with the safest rung.';return;}
+b.classList.add('done');step++;document.getElementById('sc').textContent='Rung '+step+' / 5';
+if(step===5)document.getElementById('sc').textContent='Top! Risk tends to rise with potential return — not guaranteed.';});
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

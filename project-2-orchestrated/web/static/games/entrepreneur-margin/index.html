@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block margin</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Subtract blocks</h1><p class="sub">Green = $3 price · Red = $1.20 cost per sticker.</p>
+<div class="row" style="justify-content:center;gap:4px;flex-wrap:wrap;margin:10px 0" id="rev"></div>
+<div class="row" style="justify-content:center;gap:4px;flex-wrap:wrap;margin:10px 0" id="cost"></div>
+<button class="btn btn-primary" id="go">Show what’s left</button>
+<div class="feedback hidden" id="o"></div>
+<script>
+for(let i=0;i<6;i++){const d=document.createElement('div');d.style.width='34px';d.style.height='34px';d.style.borderRadius='6px';d.style.background='#22c55e';d.textContent='$';d.style.display='flex';d.style.alignItems='center';d.style.justifyContent='center';d.style.color='#fff';d.style.fontWeight='800';document.getElementById('rev').appendChild(d);}
+for(let i=0;i<3;i++){const d=document.createElement('div');d.style.width='40px';d.style.height='24px';d.style.borderRadius='6px';d.style.background='#e53e3e';document.getElementById('cost').appendChild(d);}
+document.getElementById('go').onclick=()=>{const m=3-1.2;document.getElementById('o').classList.remove('hidden');
+document.getElementById('o').textContent='Gross margin ≈ $'+m.toFixed(2)+' each — still add time + other costs.';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

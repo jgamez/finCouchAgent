@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMS red flags</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Spot the scams</h1><p class="sub">Tap the sketchy phrases inside the message (3 hits).</p>
+<div class="scam-screen" id="msg"></div>
+<div class="score" id="sc">Flags: 0 / 3</div>
+<script>
+const parts=[
+{t:'Hi — ',ok:false},{t:'URGENT: account deleted in 1 hr',ok:true},{t:' — click ',ok:false},{t:'verify SSN here',ok:true},{t:' — also ',ok:false},{t:'wire gift cards for refund',ok:true},{t:' — thanks',ok:false}];
+let hits=0;
+document.getElementById('msg').innerHTML=parts.map((p,i)=>'<span class="'+(p.ok?'scam-hotspot':'')+'" data-i="'+i+'">'+p.t+'</span>').join('');
+document.getElementById('msg').onclick=e=>{const s=e.target.closest('.scam-hotspot');if(!s||s.classList.contains('found'))return;
+const i=+s.dataset.i;if(!parts[i].ok)return;s.classList.add('found');hits++;document.getElementById('sc').textContent='Flags: '+hits+' / 3';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

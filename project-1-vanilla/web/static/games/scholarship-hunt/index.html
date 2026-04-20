@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aid memory</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Match aid types</h1><p class="sub">Flip two cards; pair the phrase with the right label.</p>
+<div class="score" id="sc">Pairs: 0 / 4</div>
+<div class="memory-grid" id="grid"></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const pairs=[["Gift aid you keep if eligible","Grant / scholarship"],["Borrowed money + interest","Student loan"],["FAFSA helps assess federal need aid","FAFSA form"],["Must repay on a schedule","Loan repayment"]];
+let cards=[],first=null,lock=false,matches=0;
+function build(){cards=[];pairs.forEach(([a,b],i)=>{cards.push({id:i,t:a});cards.push({id:i,t:b});});cards.sort(()=>Math.random()-.5);
+const g=document.getElementById('grid');g.innerHTML='';
+cards.forEach((c,idx)=>{const w=document.createElement('div');w.className='flip-wrap perspective';w.dataset.idx=idx;
+w.innerHTML='<div class="flip-inner"><div class="flip-face flip-front">?</div><div class="flip-face flip-back" style="font-size:0.68rem">'+c.t+'</div></div>';
+w.onclick=()=>flip(w);g.appendChild(w);});}
+function flip(w){if(lock||w.classList.contains('matched')||w.classList.contains('flipped'))return;w.classList.add('flipped');
+const idx=+w.dataset.idx,c=cards[idx];if(!first){first={w,c};return;}lock=true;const a=first.c,b=c;
+if(a.id===b.id&&a.t!==b.t){matches++;w.classList.add('matched');first.w.classList.add('matched');document.getElementById('sc').textContent='Pairs: '+matches+' / 4';
+if(matches===4){const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add('good');fb.textContent='Financial aid pairs locked in!';}
+first=null;lock=false;return;}
+setTimeout(()=>{w.classList.remove('flipped');first.w.classList.remove('flipped');first=null;lock=false;},650);}
+build();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

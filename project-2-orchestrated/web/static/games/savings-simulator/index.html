@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fill the jar</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Coin drop</h1><p class="sub">Tap coins to fill the jar toward $120. Skip a week with Spend week.</p>
+<div class="score" id="wk">Week 1 of 8</div>
+<div class="jar-wrap"><div class="jar"><div class="jar-fill" id="jf"></div></div>
+<p>$<span id="bal">0</span> / $120</p>
+<div class="coin-pad"><button type="button" class="coin-btn" id="coin" title="Save $15">🪙</button>
+<button class="btn btn-outline" id="sp">Spend week</button></div></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+let week=1,bal=0;const goal=120,add=15,weeks=8;
+function paint(){document.getElementById('wk').textContent='Week '+week+' of '+weeks;
+document.getElementById('bal').textContent=bal;
+document.getElementById('jf').style.height=Math.min(100,(bal/goal)*100)+'%';
+if(week>weeks){const fb=document.getElementById('fb');fb.classList.remove('hidden');
+fb.textContent=bal>=goal?'Jar filled — nice emergency starter!':'Jar at $'+bal+' — try more 🪙 taps next run.';
+fb.classList.add(bal>=goal?'good':'bad');}}
+document.getElementById('coin').onclick=()=>{if(week<=weeks){bal+=add;week++;paint();}};
+document.getElementById('sp').onclick=()=>{if(week<=weeks){week++;paint();}};
+paint();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

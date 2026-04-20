@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seesaw hours</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Balance the hustle</h1><p class="sub">Slide gig hours — plank tilts with load.</p>
+<label>Gig hours / week: <span id="v">5</span></label>
+<input type="range" id="h" min="0" max="25" value="5">
+<div class="seesaw-wrap"><div class="seesaw-plank" id="pl"></div><div class="seesaw-fulcrum"></div></div>
+<div class="feedback" id="out"></div>
+<script>
+const el=document.getElementById('h'),pl=document.getElementById('pl');
+function upd(){const g=+el.value;document.getElementById('v').textContent=g;
+pl.style.transform='rotate('+(g-5)*2.2+'deg)';
+document.getElementById('out').textContent=g>15?'Plank tips hard — protect sleep and school.':g>0?'Light tilt — small gigs can fund goals.':'All study time — also valuable.';}
+el.oninput=upd;upd();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

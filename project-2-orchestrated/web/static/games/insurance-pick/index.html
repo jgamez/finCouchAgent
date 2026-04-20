@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coverage drop</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Drop the shield</h1><p class="sub">Drag an icon onto the scenario that fits best.</p>
+<div class="score" id="sc"></div>
+<div class="chip-tray" id="tray"></div>
+<div class="card" id="scene" style="min-height:92px"></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const rounds=[
+{t:"🚗 Car crash you caused — which coverage?",ok:"Auto insurance"},
+{t:"🏥 Broken arm on a hike — which coverage?",ok:"Health insurance"},
+{t:"🏠 Stolen stuff in your rental — which?",ok:"Renters insurance"}];
+const icons=[{i:"🚗",lab:"Auto insurance"},{i:"🏥",lab:"Health insurance"},{i:"🏠",lab:"Renters insurance"},{i:"🦽",lab:"Disability insurance"}];
+let ri=0,score=0;
+function scene(){if(ri>=rounds.length){document.getElementById('scene').innerHTML='<p><strong>Done!</strong> '+score+'/'+rounds.length+'</p>';document.getElementById('tray').innerHTML='';return;}
+const r=rounds[ri];document.getElementById('sc').textContent='Round '+(ri+1)+' / '+rounds.length;
+document.getElementById('scene').innerHTML='<p>'+r.t+'</p>';
+document.getElementById('tray').innerHTML='';
+icons.forEach(x=>{const d=document.createElement('div');d.className='drag-chip';d.draggable=true;d.textContent=x.i+' '+x.lab;
+d.ondragstart=e=>e.dataTransfer.setData('text/plain',x.lab);document.getElementById('tray').appendChild(d);});
+const z=document.getElementById('scene');
+z.ondragover=e=>e.preventDefault();z.ondrop=e=>{e.preventDefault();const lab=e.dataTransfer.getData('text/plain');const fb=document.getElementById('fb');
+fb.classList.remove('hidden');fb.classList.remove('good','bad');
+if(lab===r.ok){score++;fb.classList.add('good');fb.textContent='Right shield!';ri++;setTimeout(()=>{fb.classList.add('hidden');scene();},420);}
+else{fb.classList.add('bad');fb.textContent='Not the best fit — try another icon.';setTimeout(()=>fb.classList.add('hidden'),700);}};}
+scene();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

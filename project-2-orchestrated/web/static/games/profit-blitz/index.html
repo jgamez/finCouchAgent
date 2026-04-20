@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lemonade stacks</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Count the cups</h1><p class="sub">40 cups × $2 revenue. Costs shown as stacks.</p>
+<div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin:10px 0" id="cups"></div>
+<div class="score">Variable cost stack (40 × $0.40)</div>
+<div class="row" style="justify-content:center;gap:4px;flex-wrap:wrap" id="varc"></div>
+<div class="score" style="margin-top:8px">Fixed: sign $15</div>
+<button class="btn btn-primary" id="go">Reveal profit bar</button>
+<div class="bar" style="height:14px;margin-top:10px"><i id="bar" style="width:0%"></i></div>
+<div class="feedback hidden" id="out"></div>
+<script>
+for(let k=0;k<12;k++){const d=document.createElement('div');d.className='pick-tile';d.style.width='36px';d.style.height='44px';d.style.fontSize='1.1rem';d.textContent='🥤';document.getElementById('cups').appendChild(d);}
+for(let k=0;k<8;k++){const d=document.createElement('div');d.className='pick-tile';d.style.width='32px';d.style.height='32px';d.style.fontSize='0.9rem';d.textContent='🪙';document.getElementById('varc').appendChild(d);}
+document.getElementById('go').onclick=()=>{const rev=80,vc=16,fx=15,p=rev-vc-fx;
+document.getElementById('bar').style.width='100%';const o=document.getElementById('out');o.classList.remove('hidden');
+o.textContent='Revenue $'+rev+' − variable $'+vc+' − fixed $'+fx+' = profit $'+p+'.';};
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>

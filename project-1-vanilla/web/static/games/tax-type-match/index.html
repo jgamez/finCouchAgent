@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tax memory</title>
+<link rel="stylesheet" href="/static/games/shared/game-shell.css">
+</head>
+<body>
+<h1>Flip & match</h1><p class="sub">Find pairs: clue ↔ tax type (8 cards).</p>
+<div class="score" id="sc">Matches: 0 / 4</div>
+<div class="memory-grid" id="grid"></div>
+<div class="feedback hidden" id="fb"></div>
+<script>
+const pairs=[["Soda receipt","Sales tax"],["Paystub withhold","Income tax"],["Home value bill","Property tax"],["FICA line","Payroll tax"]];
+let cards=[],first=null,lock=false,matches=0;
+function build(){cards=[];pairs.forEach(([a,b],i)=>{cards.push({id:i,t:a,side:'a'});cards.push({id:i,t:b,side:'b'});});
+cards.sort(()=>Math.random()-.5);const g=document.getElementById('grid');g.innerHTML='';
+cards.forEach((c,idx)=>{const w=document.createElement('div');w.className='flip-wrap perspective';w.dataset.idx=idx;
+w.innerHTML='<div class="flip-inner"><div class="flip-face flip-front">?</div><div class="flip-face flip-back">'+c.t+'</div></div>';
+w.onclick=()=>flip(w);g.appendChild(w);});}
+function flip(w){if(lock||w.classList.contains('matched')||w.classList.contains('flipped'))return;
+w.classList.add('flipped');const idx=+w.dataset.idx,c=cards[idx];
+if(!first){first={w,c};return;}
+lock=true;const a=first.c,b=c;if(a.id===b.id&&a.side!==b.side){matches++;w.classList.add('matched');first.w.classList.add('matched');
+document.getElementById('sc').textContent='Matches: '+matches+' / 4';
+if(matches===4){const fb=document.getElementById('fb');fb.classList.remove('hidden');fb.classList.add('good');fb.textContent='All taxes matched!';}
+first=null;lock=false;return;}
+setTimeout(()=>{w.classList.remove('flipped');first.w.classList.remove('flipped');first=null;lock=false;},650);}
+build();
+
+function reportHeight() {
+  const h = Math.max(
+    document.body ? document.body.scrollHeight : 0,
+    document.documentElement ? document.documentElement.scrollHeight : 0
+  );
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'fincoach-game-height', height: h }, window.location.origin);
+  }
+}
+
+window.addEventListener('load', reportHeight);
+window.addEventListener('resize', reportHeight);
+new MutationObserver(() => reportHeight()).observe(document.body, { childList: true, subtree: true, attributes: true });
+setTimeout(reportHeight, 0);
+</script>
+</body>
+</html>
