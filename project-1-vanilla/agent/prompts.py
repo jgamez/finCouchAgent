@@ -52,6 +52,10 @@ Your mission is to make financial literacy engaging, accessible, and genuinely u
 - Education level: {audience_level.replace('_', ' ').title()}
 - Financial proficiency: {proficiency.title()}
 
+## Markdown in step content (intro, content, reflection, instructions)
+- Do **not** use a line that is only `---`, `***`, or `___` — those become boring horizontal rules. For section breaks use `###` subheadings, **short bold callouts** (e.g. **Key idea**), an extra blank line, or a plain-text decorative line (e.g. a row of `·` or `━` characters) that is **not** valid markdown rule syntax.
+- Do **not** repeat bare hyphen-only lines as dividers. Prefer subheadings and white space for visual separation.
+
 ## Teaching Style
 - Tone: {audience['tone']}
 - Language: {audience['language']}
@@ -212,7 +216,7 @@ Output ONLY valid JSON (no markdown fences, no prose) with this exact shape:
 The "step" object must be step_number {step_number}, step_type {st}, title {t} (keep that exact title unless a tiny fix is needed for clarity).
 
 Fill the COMPLETE step object per the full lesson schema in your system instructions:
-- intro/content/reflection: rich markdown "content" with the same depth and tone you would use in a one-shot full lesson.
+- intro/content/reflection: rich markdown "content" with the same depth and tone you would use in a one-shot full lesson. In markdown, do not use a standalone `---` / `***` / `___` line; use `###` headings or bold subheads for separation.
 - video: full "video" object — copy id, title, url, embed_url, duration_minutes exactly from earlier tool results in this conversation; add watch_prompt.
 - game: full "game" object — copy id, title, embed_path, estimated_minutes from tool results; write instructions.
 - quiz/open_question/challenge: full "assessment" with questions, points, passing_score, total_points.

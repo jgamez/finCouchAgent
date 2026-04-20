@@ -90,6 +90,7 @@
 
   input[type="text"],
   input[type="number"],
+  textarea,
   select {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -103,7 +104,7 @@
     -webkit-appearance: none;
   }
 
-  input:focus, select:focus {
+  input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--gold);
     background: var(--white);
@@ -278,39 +279,59 @@
       <label>Education Level</label>
       <div class="pill-group" id="level-group">
         <div class="pill" data-value="middle_school" onclick="selectPill(this, 'level-group', 'audience_level')">Middle School</div>
-        <div class="pill" data-value="high_school" onclick="selectPill(this, 'level-group', 'audience_level')">High School</div>
+        <div class="pill selected" data-value="high_school" onclick="selectPill(this, 'level-group', 'audience_level')">High School</div>
         <div class="pill" data-value="college" onclick="selectPill(this, 'level-group', 'audience_level')">College</div>
       </div>
-      <input type="hidden" id="audience_level" />
+      <input type="hidden" id="audience_level" value="high_school" />
     </div>
     <div class="form-group">
       <label>Financial Knowledge</label>
       <div class="pill-group" id="prof-group">
         <div class="pill" data-value="beginner" onclick="selectPill(this, 'prof-group', 'proficiency')">Beginner</div>
         <div class="pill" data-value="intermediate" onclick="selectPill(this, 'prof-group', 'proficiency')">Intermediate</div>
-        <div class="pill" data-value="advanced" onclick="selectPill(this, 'prof-group', 'proficiency')">Advanced</div>
+        <div class="pill selected" data-value="advanced" onclick="selectPill(this, 'prof-group', 'proficiency')">Advanced</div>
       </div>
-      <input type="hidden" id="proficiency" />
+      <input type="hidden" id="proficiency" value="advanced" />
     </div>
 
     <hr class="divider" />
 
-    <p class="form-section-title"><span>3</span> What to Learn</p>
+    <p class="form-section-title"><span>3</span> Lesson format</p>
     <div class="form-group">
-      <label>Financial Topic</label>
-      <select id="topic">
-        <option value="">Select a topic...</option>
-        <option value="budgeting">Budgeting & Money Management</option>
-        <option value="saving">Saving & Emergency Funds</option>
-        <option value="investing">Investing & the Stock Market</option>
-        <option value="credit">Credit Scores & Borrowing</option>
-        <option value="compound interest">Compound Interest</option>
-        <option value="taxes">Taxes & Filing</option>
-        <option value="insurance">Insurance Basics</option>
-        <option value="student loans">Student Loans & Financial Aid</option>
-        <option value="entrepreneurship">Entrepreneurship & Side Hustles</option>
-        <option value="cryptocurrency">Cryptocurrency & Digital Assets</option>
+      <label>How should we build your lesson?</label>
+      <select id="lesson_flow_id" title="Lesson generation flow">
+        <option value="default">FinCoach (default)</option>
       </select>
+    </div>
+
+    <hr class="divider" />
+
+    <p class="form-section-title"><span>4</span> What to Learn</p>
+    <div class="form-group">
+      <label>Financial topic</label>
+      <select id="topic" onchange="onTopicModeChange()">
+        <option value="budgeting" selected>Budgeting &amp; Money Management</option>
+        <option value="saving">Saving &amp; Emergency Funds</option>
+        <option value="investing">Investing &amp; the Stock Market</option>
+        <option value="credit">Credit Scores &amp; Borrowing</option>
+        <option value="compound interest">Compound Interest</option>
+        <option value="taxes">Taxes &amp; Filing</option>
+        <option value="insurance">Insurance Basics</option>
+        <option value="student loans">Student Loans &amp; Financial Aid</option>
+        <option value="entrepreneurship">Entrepreneurship &amp; Side Hustles</option>
+        <option value="cryptocurrency">Cryptocurrency &amp; Digital Assets</option>
+        <option value="__custom__">My own financial topic (free form)</option>
+      </select>
+    </div>
+    <div class="form-group" id="custom-topic-group" style="display: none" aria-hidden="true">
+      <label>Describe your topic</label>
+      <input
+        type="text"
+        id="custom_topic"
+        maxlength="240"
+        placeholder="e.g. HSAs, taxes on gig work, or saving for a car"
+        autocomplete="off"
+      />
     </div>
 
     <div class="submit-row">
@@ -335,21 +356,105 @@
 
 {% block extra_scripts %}
 <script>
-  const state = { audience_level: '', proficiency: '' };
+  const state = { audience_level: 'high_school', proficiency: 'advanced' };
+  const AGE_DEFAULT_BY_LEVEL = { middle_school: 14, high_school: 16, college: 20 };
+
+  function setDefaultAgeForEducationLevel(level) {
+    const d = AGE_DEFAULT_BY_LEVEL[level];
+    if (d == null) return;
+    const el = document.getElementById('age');
+    if (el) el.value = d;
+  }
+
+  function onTopicModeChange() {
+    const topicSel = document.getElementById('topic');
+    const g = document.getElementById('custom-topic-group');
+    const isCustom = topicSel && topicSel.value === '__custom__';
+    if (g) {
+      g.style.display = isCustom ? 'block' : 'none';
+      g.setAttribute('aria-hidden', isCustom ? 'false' : 'true');
+    }
+    if (isCustom) {
+      const c = document.getElementById('custom_topic');
+      if (c) c.focus();
+    }
+  }
+
+  function resolveFormTopic() {
+    const topicSel = document.getElementById('topic');
+    if (!topicSel) return { topic: null, err: 'Topic field missing.' };
+    if (topicSel.value === '__custom__') {
+      const t = (document.getElementById('custom_topic') && document.getElementById('custom_topic').value || '').trim();
+      if (!t) return { topic: null, err: 'Please enter a financial education topic, or pick one from the list above.' };
+      return { topic: t, err: null };
+    }
+    return { topic: topicSel.value, err: null };
+  }
+
+  function parseErrorFromResponse(data) {
+    if (data == null) return 'Something went wrong. Please try again.';
+    if (Array.isArray(data.detail)) {
+      const first = data.detail[0];
+      if (typeof first === 'string') return first;
+      if (first && (first.msg != null)) {
+        let s = String(first.msg);
+        s = s.replace(/^Value error,\s*/i, '').trim();
+        return s;
+      }
+    }
+    if (typeof data.detail === 'string') return data.detail;
+    return 'Something went wrong. Please try again.';
+  }
+
+  async function loadLessonFlows() {
+    const sel = document.getElementById('lesson_flow_id');
+    if (!sel) return;
+    try {
+      const res = await fetch('/api/lesson-flows');
+      if (!res.ok) return;
+      const flows = await res.json();
+      if (!Array.isArray(flows) || flows.length === 0) return;
+      sel.innerHTML = '';
+      flows.forEach((f) => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.label || f.id;
+        if (f.description) opt.title = f.description;
+        sel.appendChild(opt);
+      });
+      if (Array.from(sel.options).some((o) => o.value === 'moneylingo_v1')) {
+        sel.value = 'moneylingo_v1';
+      } else {
+        sel.value = 'default';
+      }
+    } catch (_) { /* keep static options */ }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    state.audience_level = 'high_school';
+    state.proficiency = 'advanced';
+    setDefaultAgeForEducationLevel('high_school');
+    loadLessonFlows();
+    onTopicModeChange();
+  });
 
   function selectPill(el, groupId, stateKey) {
     document.querySelectorAll(`#${groupId} .pill`).forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
     document.getElementById(stateKey).value = el.dataset.value;
     state[stateKey] = el.dataset.value;
+    if (stateKey === 'audience_level') {
+      setDefaultAgeForEducationLevel(el.dataset.value);
+    }
   }
 
   async function startLesson() {
     const name = document.getElementById('name').value.trim();
-    const age = parseInt(document.getElementById('age').value);
+    const age = parseInt(document.getElementById('age').value, 10);
     const audience_level = document.getElementById('audience_level').value;
     const proficiency = document.getElementById('proficiency').value;
-    const topic = document.getElementById('topic').value;
+    const { topic, err: topicErr } = resolveFormTopic();
+    const lesson_flow_id = document.getElementById('lesson_flow_id').value || 'default';
 
     const err = document.getElementById('error-msg');
 
@@ -357,7 +462,8 @@
     if (!age || age < 10 || age > 25) { err.textContent = 'Please enter a valid age (10-25).'; return; }
     if (!audience_level) { err.textContent = 'Please select your education level.'; return; }
     if (!proficiency) { err.textContent = 'Please select your knowledge level.'; return; }
-    if (!topic) { err.textContent = 'Please select a topic.'; return; }
+    if (topicErr) { err.textContent = topicErr; return; }
+    if (!topic) { err.textContent = 'Please select or enter a financial education topic.'; return; }
     err.textContent = '';
 
     document.getElementById('loading').classList.add('active');
@@ -368,8 +474,14 @@
       const res = await fetch('/api/start-lesson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, age, audience_level, proficiency, topic })
+        body: JSON.stringify({ name, age, audience_level, proficiency, topic, lesson_flow_id })
       });
+      if (!res.ok) {
+        document.getElementById('loading').classList.remove('active');
+        const data = await res.json().catch(() => ({}));
+        err.textContent = parseErrorFromResponse(data);
+        return;
+      }
       const data = await res.json();
       const sessionId = data.session_id;
 

@@ -157,6 +157,114 @@
     margin-bottom: 1.5rem;
   }
 
+  .step-badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .step-badges-row .step-type-badge {
+    margin-bottom: 0;
+  }
+
+  .flow-block-chip {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--navy);
+    background: #EEF2FF;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  /* MoneyLingo / future flow_block_id — graphic band above step body */
+  .flow-block-illustration {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 5.5rem;
+    position: relative;
+    border: 1px solid rgba(13, 27, 42, 0.08);
+  }
+  .flow-block-illustration__art {
+    flex: 0 0 auto;
+    width: 7.5rem;
+    max-width: 32%;
+  }
+  .flow-block-illustration__art svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .flow-block-illustration__text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .flow-block-illustration__kicker {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(13, 27, 42, 0.55);
+    margin-bottom: 0.2rem;
+  }
+  .flow-block-illustration__label {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.3;
+  }
+  .flow-block-illustration--hook {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 50%, #FEF3C7 100%);
+  }
+  .flow-block-illustration--context_video {
+    background: linear-gradient(135deg, #FFF1F2 0%, #FFF5F5 40%, #FECACA55 100%);
+  }
+  .flow-block-illustration--core_lesson {
+    background: linear-gradient(135deg, #ECFDF5 0%, #F0FFF4 50%, #BBF7D080 100%);
+  }
+  .flow-block-illustration--aha_moment {
+    background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 45%, #FDE68A55 100%);
+  }
+  .flow-block-illustration--word_wallet {
+    background: linear-gradient(135deg, #F0F9FF 0%, #EFF6FF 50%, #BFDBFE66 100%);
+  }
+  .flow-block-illustration--quiz {
+    background: linear-gradient(135deg, #EBF8FF 0%, #F0F8FF 50%, #7DD3FC44 100%);
+  }
+  .flow-block-illustration--simulation {
+    background: linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 50%, #C4B5FD55 100%);
+  }
+  .flow-block-illustration--irl {
+    background: linear-gradient(135deg, #F0FDFA 0%, #F7FEE7 50%, #A7F3D066 100%);
+  }
+  .flow-block-illustration--generic {
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+  }
+  @media print {
+    .flow-block-illustration {
+      break-inside: avoid;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+  @media (max-width: 520px) {
+    .flow-block-illustration {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .flow-block-illustration__art { max-width: 8rem; }
+  }
+
   .step-type-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -647,7 +755,45 @@ const SESSION_ID = "{{ session_id }}";
 let lesson = null;
 let currentStep = 0;
 let answers = {};
-let partialPollTimer = null;
+let lessonEventSource = null;
+/** Serialize SSE-driven fetches so out-of-order events do not corrupt the UI. */
+let sseApplyChain = Promise.resolve();
+/** Set when lesson API returns irrecoverable errors so we do not keep reconnecting. */
+let lessonFetchAborted = false;
+
+function stopLessonStream() {
+  if (lessonEventSource) {
+    lessonEventSource.close();
+    lessonEventSource = null;
+  }
+}
+
+function showSessionLostUi(message) {
+  lessonFetchAborted = true;
+  stopLessonStream();
+  lesson = null;
+  const esc = (s) =>
+    String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  const c = document.getElementById('lesson-container');
+  if (c) {
+    c.innerHTML = `
+      <div class="step-card" style="text-align:center;padding:2.5rem 1.5rem">
+        <p style="font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;color:var(--navy);margin-bottom:1rem">Lesson unavailable</p>
+        <p style="color:var(--slate);max-width:28rem;margin:0 auto 1.5rem;line-height:1.55">${esc(message)}</p>
+        <p style="color:var(--slate);font-size:0.9rem;margin-bottom:1.5rem">This usually happens after the dev server reloads — in-memory sessions are cleared.</p>
+        <a href="/" class="btn btn-primary">Start over from home →</a>
+      </div>`;
+  }
+  const nav = document.getElementById('step-nav-list');
+  if (nav) nav.innerHTML = '';
+  const fill = document.getElementById('progress-fill');
+  if (fill) fill.style.width = '0%';
+  const lab = document.getElementById('progress-label');
+  if (lab) lab.textContent = '';
+}
 
 const BADGE_CLASSES = {
   intro: 'badge-intro',
@@ -670,6 +816,132 @@ const TYPE_LABELS = {
   open_question: '💬 Discussion',
   challenge: '🏆 Challenge',
 };
+
+/** MoneyLingo v1 (and similar) — ``flow_block_id`` set by the server from a code-defined flow. */
+const FLOW_BLOCK_LABELS = {
+  hook: 'MoneyLingo · Hook',
+  context_video: 'MoneyLingo · Video',
+  core_lesson: 'MoneyLingo · Core lesson',
+  aha_moment: 'MoneyLingo · Aha moment',
+  word_wallet: 'MoneyLingo · Word wallet',
+  quiz: 'MoneyLingo · Quiz',
+  simulation: 'MoneyLingo · Simulation',
+  irl: 'MoneyLingo · IRL',
+};
+
+function flowBlockChipHtml(step) {
+  const id = step && step.flow_block_id;
+  if (!id || !FLOW_BLOCK_LABELS[id]) return '';
+  return `<span class="flow-block-chip">${escapeHtml(FLOW_BLOCK_LABELS[id])}</span>`;
+}
+
+/**
+ * Kicker + label + CSS modifier + inline SVG for each `flow_block_id` (MoneyLingo v1 and future
+ * code-defined flows). Add new block ids here when a new format ships.
+ */
+const FLOW_BLOCK_ILLUSTRATION_SPECS = {
+  hook: {
+    mod: 'flow-block-illustration--hook',
+    kicker: 'Curiosity',
+    label: 'A real question before the definition',
+  },
+  context_video: {
+    mod: 'flow-block-illustration--context_video',
+    kicker: 'Context',
+    label: 'A short look from the outside in',
+  },
+  core_lesson: {
+    mod: 'flow-block-illustration--core_lesson',
+    kicker: 'Core idea',
+    label: 'What it is, and how it actually works',
+  },
+  aha_moment: {
+    mod: 'flow-block-illustration--aha_moment',
+    kicker: 'Aha! Numbers',
+    label: 'Two scenarios, real dollars, a clear "wow"',
+  },
+  word_wallet: {
+    mod: 'flow-block-illustration--word_wallet',
+    kicker: 'Word wallet',
+    label: 'The terms to carry with you',
+  },
+  quiz: {
+    mod: 'flow-block-illustration--quiz',
+    kicker: 'Check-in',
+    label: 'Quick multiple choice — no pressure',
+  },
+  simulation: {
+    mod: 'flow-block-illustration--simulation',
+    kicker: 'Try it',
+    label: 'A safe way to test a money choice',
+  },
+  irl: {
+    mod: 'flow-block-illustration--irl',
+    kicker: 'In real life',
+    label: 'Small moves you can do next',
+  },
+};
+
+const FLOW_BLOCK_ILLUSTRATION_SVGS = {
+  hook: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="18" width="64" height="40" rx="8" fill="#FFFBF5" stroke="#D69E2E" stroke-width="2"/><text x="40" y="48" text-anchor="middle" font-size="20" font-family="system-ui,Georgia,serif" font-weight="800" fill="#1A365D">?</text><path d="M64 32l20 8v18l-20-8" fill="#F6E4B8" stroke="#B7791F" stroke-width="1.5"/><circle cx="92" cy="22" r="3" fill="#D69E2E"/><circle cx="102" cy="14" r="2" fill="#9AE6B4"/></svg>`,
+  context_video: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="112" height="70" rx="8" fill="#0f172A"/><rect x="10" y="14" width="100" height="58" rx="4" fill="#1E293B"/><circle cx="60" cy="43" r="22" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/><path d="M50 32 L50 55 L75 44 Z" fill="#D69E2E"/></svg>`,
+  core_lesson: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="12" width="32" height="24" rx="2" fill="#C6E6C0" stroke="#276749" stroke-width="1.5" transform="rotate(-8 36 24)"/><rect x="32" y="20" width="32" height="24" rx="2" fill="#9AE6B4" stroke="#276749" stroke-width="1.5"/><rect x="48" y="32" width="32" height="24" rx="2" fill="#E6FFFA" stroke="#0D9480" stroke-width="1.5" transform="rotate(6 64 44)"/><line x1="10" y1="78" x2="110" y2="78" stroke="#CBD5E0" stroke-width="1" stroke-dasharray="3 3"/></svg>`,
+  aha_moment: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M10 60 Q30 20 50 50 T90 30 L90 60 L10 60 Z" fill="#EEF2FF" stroke="#4C51BF" stroke-width="1.5"/><path d="M10 60 L20 50 L32 55 L50 32 L64 40 L80 20 L90 30" fill="none" stroke="#D69E2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="80" cy="20" r="5" fill="#D69E2E"/><text x="78" y="24" font-size="8" fill="white" font-weight="800">$</text></svg>`,
+  word_wallet: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="8" width="50" height="32" rx="4" fill="#E0E7FF" stroke="#4C51BF" stroke-width="1.2" transform="rotate(6 75 24)"/><rect x="32" y="20" width="50" height="32" rx="4" fill="#F0F9FF" stroke="#2B6CB0" stroke-width="1.2"/><rect x="14" y="32" width="50" height="32" rx="4" fill="#FFFBF0" stroke="#B7791F" stroke-width="1.2" transform="rotate(-6 39 48)"/><text x="32" y="50" font-size="8" fill="#1A365D" font-weight="700">$</text><text x="52" y="42" font-size="7" fill="#2B6CB0" font-weight="600">% APR</text></svg>`,
+  quiz: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="8" width="80" height="64" rx="4" fill="#F8FAFC" stroke="#2B6CB0" stroke-width="2"/><rect x="32" y="20" width="8" height="8" fill="#2B6CB0" rx="1"/><path d="M30 32 L32 35 L40 30" fill="none" stroke="#38A169" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="40" width="8" height="8" fill="#BEE3F8" rx="1" stroke="#2B6CB0"/><rect x="32" y="60" width="8" height="8" fill="#BEE3F8" rx="1" stroke="#2B6CB0"/><line x1="50" y1="24" x2="88" y2="24" stroke="#A0AEC0" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="44" x2="88" y2="44" stroke="#A0AEC0" stroke-width="2" stroke-linecap="round"/></svg>`,
+  simulation: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="32" width="80" height="32" rx="6" fill="#1A1A2E" stroke="#6B46C1" stroke-width="1.5"/><rect x="28" y="38" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="40" y="50" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="52" y="44" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="24" y="12" width="4" height="4" fill="#6B46C1" transform="rotate(-15 26 14)"/><rect x="32" y="8" width="4" height="4" fill="#6B46C1" transform="rotate(8 34 10)"/><path d="M10 20 L20 20 L20 10" fill="none" stroke="#6B46C1" stroke-width="1" opacity=".6"/></svg>`,
+  irl: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M8 64 Q40 20 100 32 L100 64 Z" fill="#C6E6C0" opacity=".45"/><path d="M20 50 Q50 32 80 50" fill="none" stroke="#2F855A" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="50" cy="32" r="4" fill="#C53030"/><rect x="46" y="28" width="8" height="10" fill="#1A202C" rx="1" transform="rotate(8 50 32)"/></svg>`,
+  generic: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="20" width="72" height="50" rx="6" fill="#F7FAFC" stroke="#1A365D" stroke-width="1.5" stroke-dasharray="4 2"/><rect x="36" y="32" width="16" height="4" fill="#D69E2E" opacity=".4"/><rect x="36" y="42" width="48" height="3" fill="#CBD5E0"/><rect x="36" y="50" width="40" height="3" fill="#CBD5E0"/></svg>`,
+};
+
+function _humanizeFlowBlockIdForUi(id) {
+  if (!id) return 'Lesson block';
+  return id
+    .split(/[_-]+/g)
+    .filter(Boolean)
+    .map((p) => p.length ? p[0].toUpperCase() + p.slice(1) : p)
+    .join(' ');
+}
+
+/**
+ * Renders a themed illustration row when the step has `flow_block_id` (MoneyLingo & future formats).
+ * Unknown ids get a generic visual so new flows still show something.
+ */
+function buildFlowBlockIllustrationHtml(step) {
+  if (!step || !step.flow_block_id) return '';
+  const id = step.flow_block_id;
+  const spec = FLOW_BLOCK_ILLUSTRATION_SPECS[id];
+  const kicker = spec ? spec.kicker : 'This section';
+  const mod = spec ? spec.mod : 'flow-block-illustration--generic';
+  const svg = (FLOW_BLOCK_ILLUSTRATION_SVGS[id] || FLOW_BLOCK_ILLUSTRATION_SVGS.generic);
+  const blurb = spec ? spec.label : _humanizeFlowBlockIdForUi(id);
+  const aria = `${kicker} — ${blurb}`;
+  return `
+    <div class="flow-block-illustration ${mod}" role="img" aria-label="${escapeHtml(aria)}">
+      <div class="flow-block-illustration__art">${svg}</div>
+      <div class="flow-block-illustration__text">
+        <div class="flow-block-illustration__kicker">${escapeHtml(kicker)}</div>
+        <div class="flow-block-illustration__label">${
+          spec ? escapeHtml(spec.label) : `A focused beat in this lesson: ${escapeHtml(_humanizeFlowBlockIdForUi(id))}`
+        }</div>
+      </div>
+    </div>
+  `;
+}
+
+/** Strip markdown horizontal-rule lines (---, ***, ___) for cleaner display. */
+function stripMarkdownRuleDividers(text) {
+  return String(text || '')
+    .split('\n')
+    .filter((line) => !/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line.trim()))
+    .join('\n');
+}
+
+function contentBodyMarkdown(step) {
+  const raw = step.content || '';
+  const md = stripMarkdownRuleDividers(raw);
+  return markdownToHtml(md);
+}
 
 function escapeHtml(str) {
   if (str == null) return '';
@@ -844,7 +1116,7 @@ function renderAssessmentForPrint(assessment) {
 function printStepBodyForPdf(step) {
   if (!step || step._pending) return '';
   if (['intro', 'content', 'reflection'].includes(step.step_type)) {
-    return `<div class="step-body">${markdownToHtml(step.content || '')}</div>`;
+    return `<div class="step-body">${contentBodyMarkdown(step)}</div>`;
   }
   if (step.step_type === 'video' && step.video) {
     const vt = escapeHtml(step.video.title || 'Lesson video');
@@ -854,7 +1126,7 @@ function printStepBodyForPdf(step) {
     if (step.video.watch_prompt) {
       h += `<p><strong>Watch for:</strong> ${escapeHtml(step.video.watch_prompt)}</p>`;
     }
-    if (step.content) h += `<div class="step-body">${markdownToHtml(step.content)}</div>`;
+    if (step.content) h += `<div class="step-body">${contentBodyMarkdown(step)}</div>`;
     return h;
   }
   if (step.step_type === 'game' && step.game) {
@@ -885,9 +1157,14 @@ function buildLessonPrintHtml() {
   lesson.steps.forEach((step, idx) => {
     if (step._pending) return;
     const typeLabel = escapeHtml(TYPE_LABELS[step.step_type] || step.step_type || '');
+    const flowExtra =
+      step.flow_block_id && FLOW_BLOCK_LABELS[step.flow_block_id]
+        ? ` · ${escapeHtml(FLOW_BLOCK_LABELS[step.flow_block_id])}`
+        : '';
     const body = printStepBodyForPdf(step);
+    const flowV = buildFlowBlockIllustrationHtml(step);
     parts.push(
-      `<section class="print-step"><p class="print-step-num">Step ${idx + 1}</p><h2>${escapeHtml(step.title || '')}</h2><p class="print-step-type">${typeLabel}</p>${body}</section>`
+      `<section class="print-step"><p class="print-step-num">Step ${idx + 1}</p><h2>${escapeHtml(step.title || '')}</h2>${flowV}<p class="print-step-type">${typeLabel}${flowExtra}</p>${body}</section>`
     );
   });
   parts.push('</div>');
@@ -997,51 +1274,126 @@ function syncProgressAndNav(index) {
   updatePrintButtonState();
 }
 
-function stopPartialPoll() {
-  if (partialPollTimer) {
-    clearInterval(partialPollTimer);
-    partialPollTimer = null;
-  }
+function lessonStreamNeeded() {
+  if (lessonFetchAborted) return false;
+  if (!lesson) return true;
+  return lessonHasPending();
 }
 
-async function refreshLessonFromServer() {
+/**
+ * Pull full lesson JSON and merge into the UI. Used on initial load and on each SSE update.
+ * Returns true if a valid lesson payload was applied.
+ */
+async function fetchAndApplyLesson() {
+  if (lessonFetchAborted) return false;
   try {
     const res = await fetch(`/api/lesson/${SESSION_ID}`);
-    if (res.status === 202) return;
+    if (res.status === 202) return false;
+    if (!res.ok) {
+      if (res.status === 404) {
+        showSessionLostUi(
+          'This lesson is no longer on the server. Your browser tab may be open from before a restart.',
+        );
+      } else {
+        showSessionLostUi('Could not load this lesson. Please reload the page or start again from home.');
+      }
+      return false;
+    }
     const next = await res.json();
-    const idx = currentStep;
+    if (!next || !Array.isArray(next.steps)) {
+      stopLessonStream();
+      return false;
+    }
+    const firstPaint = !lesson;
+    const idx = firstPaint ? 0 : currentStep;
     const prevBody = lesson ? stepBodySignature(lesson, idx) : '';
     const prevFoot = lesson ? stepFooterSignature(lesson, idx) : '';
     lesson = next;
-    buildSidebar();
-    syncProgressAndNav(idx);
-    const newBody = stepBodySignature(lesson, idx);
-    const newFoot = stepFooterSignature(lesson, idx);
-    if (newBody !== prevBody) {
-      renderStepMain(idx);
-    } else if (newFoot !== prevFoot) {
-      patchStepFooter(idx);
+    if (firstPaint) {
+      buildSidebar();
+      renderStep(0);
+    } else {
+      buildSidebar();
+      syncProgressAndNav(idx);
+      const newBody = stepBodySignature(lesson, idx);
+      const newFoot = stepFooterSignature(lesson, idx);
+      if (newBody !== prevBody) {
+        renderStepMain(idx);
+      } else if (newFoot !== prevFoot) {
+        patchStepFooter(idx);
+      }
     }
-    if (!lessonHasPending()) stopPartialPoll();
-  } catch (_) { /* ignore */ }
+    if (!lessonHasPending()) stopLessonStream();
+    return true;
+  } catch (_) {
+    stopLessonStream();
+    return false;
+  }
 }
 
-function startPartialPoll() {
-  stopPartialPoll();
-  if (!lessonHasPending()) return;
-  partialPollTimer = setInterval(refreshLessonFromServer, 2000);
+/** Subscribe to server pushes while the outline or steps are still generating (no polling loop). */
+function startLessonStream() {
+  stopLessonStream();
+  if (!lessonStreamNeeded()) return;
+  void fetchAndApplyLesson();
+  const es = new EventSource(`/api/lesson/${SESSION_ID}/events`);
+  lessonEventSource = es;
+  es.addEventListener('message', (ev) => {
+    sseApplyChain = sseApplyChain.then(async () => {
+      if (lessonFetchAborted) return;
+      let msg;
+      try {
+        msg = JSON.parse(ev.data);
+      } catch (_) {
+        return;
+      }
+      if (msg.type === 'heartbeat') return;
+      if (msg.type === 'gone') {
+        stopLessonStream();
+        showSessionLostUi(
+          'This lesson session ended. If the server restarted, start a new lesson from home.',
+        );
+        return;
+      }
+      if (msg.type === 'error') {
+        stopLessonStream();
+        showSessionLostUi(msg.message || 'Lesson generation failed.');
+        return;
+      }
+      if (msg.type === 'hello' || msg.type === 'update') {
+        await fetchAndApplyLesson();
+        if (!lessonStreamNeeded()) stopLessonStream();
+      }
+    });
+  });
 }
 
 async function loadLesson() {
+  if (lessonFetchAborted) return;
   const res = await fetch(`/api/lesson/${SESSION_ID}`);
   if (res.status === 202) {
-    setTimeout(loadLesson, 2000);
+    startLessonStream();
     return;
   }
-  lesson = await res.json();
+  if (!res.ok) {
+    if (res.status === 404) {
+      showSessionLostUi(
+        'No lesson data for this link. The session may have expired when the server restarted.',
+      );
+    } else {
+      showSessionLostUi('Could not load this lesson. Please try again from the home page.');
+    }
+    return;
+  }
+  const data = await res.json();
+  if (!data || !Array.isArray(data.steps)) {
+    showSessionLostUi('Lesson data was incomplete. Please start a new lesson from home.');
+    return;
+  }
+  lesson = data;
   buildSidebar();
   renderStep(0);
-  startPartialPoll();
+  startLessonStream();
 }
 
 function buildSidebar() {
@@ -1066,6 +1418,8 @@ function renderStepMain(index) {
 
   const badgeClass = BADGE_CLASSES[step.step_type] || 'badge-content';
   const typeLabel = TYPE_LABELS[step.step_type] || step.step_type;
+  const blockChip = flowBlockChipHtml(step);
+  const flowBlockVisual = buildFlowBlockIllustrationHtml(step);
 
   let bodyHtml = '';
 
@@ -1080,7 +1434,7 @@ function renderStepMain(index) {
       </div>
     `;
   } else if (['intro', 'content', 'reflection'].includes(step.step_type)) {
-    bodyHtml = `<div class="step-body">${markdownToHtml(step.content || '')}</div>`;
+    bodyHtml = `<div class="step-body">${contentBodyMarkdown(step)}</div>`;
   } else if (step.step_type === 'video' && step.video) {
     const embedSrc = youtubeEmbedSrc(step.video.embed_url || '');
     const vtitle = escapeHtml(step.video.title || 'Lesson video');
@@ -1100,7 +1454,7 @@ function renderStepMain(index) {
           loading="lazy"></iframe>
       </div>
       ${step.video.watch_prompt ? `<div class="watch-prompt">👀 <strong>Watch for:</strong> ${escapeHtml(step.video.watch_prompt)}</div>` : ''}
-      ${step.content ? `<div class="step-body" style="margin-top:1rem">${markdownToHtml(step.content)}</div>` : ''}
+      ${step.content ? `<div class="step-body" style="margin-top:1rem">${contentBodyMarkdown(step)}</div>` : ''}
     `;
   } else if (step.step_type === 'game' && step.game) {
     const gSrc = gameIframeSrc(step.game.embed_path || '');
@@ -1125,9 +1479,12 @@ function renderStepMain(index) {
   container.innerHTML = `
     <div class="step-card">
       <div class="step-header">
-        <span class="step-type-badge ${badgeClass}">${typeLabel}</span>
+        <div class="step-badges-row">
+          <span class="step-type-badge ${badgeClass}">${typeLabel}</span>${blockChip}
+        </div>
         <h2 class="step-title">${escapeHtml(step.title)}</h2>
       </div>
+      ${flowBlockVisual}
       <div class="step-body-wrapper">${bodyHtml}</div>
       <div class="step-nav-buttons">
         ${buildStepFooterButtonsHtml(index)}

@@ -18,15 +18,46 @@ from typing import Any, AsyncGenerator, Awaitable, Callable, Mapping, Optional
 
 import anthropic
 
-from agent.mcp_client import ContentRepositoryClient, get_mcp_client
+from agent.mcp_client import ContentRepositoryClient
 from agent.prompts import (
     build_system_prompt,
     ASSESSMENT_GRADING_PROMPT,
     LESSON_OUTLINE_PHASE_USER,
     lesson_expand_step_phase_user,
-    lesson_outline_before_tools_user,
     step_expansion_with_library_user,
 )
+
+def _reapply_flow_block_id_from_shell(
+    step_out: dict[str, Any], prev: dict[str, Any] | None
+) -> dict[str, Any]:
+    """
+    The shell step (from a code-defined outline) is the source of truth for
+    `flow_block_id` — model JSON or error placeholders may omit it.
+    """
+    if not prev or not prev.get("flow_block_id"):
+        return step_out
+    step_out = dict(step_out)
+    step_out["flow_block_id"] = prev["flow_block_id"]
+    return step_out
+
+
+def _expansion_error_step(
+    step_number: int,
+    step_type: str,
+    title: str,
+    prev_shell_step: dict[str, Any] | None,
+) -> dict[str, Any]:
+    o: dict[str, Any] = {
+        "step_number": step_number,
+        "step_type": step_type,
+        "title": title,
+        "content": "This step could not be generated. Please refresh or start a new lesson.",
+        "_pending": False,
+    }
+    if prev_shell_step and prev_shell_step.get("flow_block_id"):
+        o["flow_block_id"] = prev_shell_step["flow_block_id"]
+    return o
+
 
 # Steps 2+ run in parallel within each wave; the next wave starts only after the previous
 # one finishes, and results are applied in step order so "Next" always matches readiness.
@@ -111,187 +142,24 @@ class TeacherAgent:
         age: int = None,
         progress_events: list | None = None,
         on_partial: Optional[Callable[[dict, int, int], Any]] = None,
+        lesson_flow_id: str = "default",
     ) -> dict:
         """
-        Full agentic loop to generate a structured lesson.
-        Returns a parsed lesson dict.
+        Dispatch to a registered lesson flow (default FinCoach, MoneyLingo v1, …).
         """
-        system_prompt = build_system_prompt(
+        from agent.lesson_flows.registry import get_lesson_flow_handler
+
+        handler = get_lesson_flow_handler(lesson_flow_id)
+        return await handler(
+            self,
+            topic=topic,
             audience_level=audience_level,
             proficiency=proficiency,
             student_name=student_name,
             age=age,
+            progress_events=progress_events,
+            on_partial=on_partial,
         )
-
-        self._append_progress(
-            progress_events,
-            "start",
-            f"Starting lesson for topic {topic!r} ({audience_level}, {proficiency})",
-        )
-
-        age_s = str(age) if age is not None else "unknown"
-
-        self._append_progress(
-            progress_events,
-            "model",
-            "Planning lesson structure (no tools — fast outline for sidebar)…",
-            turn=0,
-        )
-        outline_user = lesson_outline_before_tools_user(
-            topic=topic,
-            student_name=student_name or "",
-            age=age_s,
-            audience_level=audience_level,
-            proficiency=proficiency,
-        )
-        outline_resp = await self.client.messages.create(
-            model=self.model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{"role": "user", "content": outline_user}],
-        )
-        early_outline = self._extract_json(outline_resp.content)
-        early_shell = self._try_shell_from_outline(early_outline)
-        if early_shell is not None:
-            shell, n_early = early_shell
-            await self._emit_partial(on_partial, shell, 0, n_early)
-            self._append_progress(
-                progress_events,
-                "step",
-                f"Lesson structure ready ({n_early} steps). Loading standards and expanding steps…",
-            )
-        else:
-            self._append_progress(
-                progress_events,
-                "warn",
-                "Pre-tool outline was invalid — fetching with tools first, then outline in-thread.",
-            )
-            user_message = (
-                f"Generate a complete financial education lesson on the topic: '{topic}'. "
-                f"Student: {student_name or 'Anonymous'}, age {age_s}, "
-                f"{audience_level.replace('_', ' ')} level, {proficiency} proficiency. "
-                f"First use the available tools to fetch relevant content, videos, and games "
-                f"from the content repository and JumpStart.org. Then build the full lesson JSON."
-            )
-            messages = [{"role": "user", "content": user_message}]
-
-        async with get_mcp_client() as mcp:
-            if early_shell is not None:
-                shell, n_early = early_shell
-                self._append_progress(
-                    progress_events,
-                    "tool_call",
-                    "fetch_jumpstart_topic (standards context for all steps)",
-                    tool="fetch_jumpstart_topic",
-                )
-                jumpstart = await mcp.fetch_jumpstart_topic(topic)
-                lesson = await self._expand_lesson_steps_targeted_mcp(
-                    mcp=mcp,
-                    shell=shell,
-                    n=n_early,
-                    outline_dict=early_outline,
-                    jumpstart=jumpstart if isinstance(jumpstart, dict) else {},
-                    system_prompt=system_prompt,
-                    progress_events=progress_events,
-                    on_partial=on_partial,
-                    topic=topic,
-                    audience_level=audience_level,
-                    proficiency=proficiency,
-                )
-            else:
-                tools = mcp.as_anthropic_tools()
-                turn = 0
-                while True:
-                    turn += 1
-                    self._append_progress(
-                        progress_events,
-                        "model",
-                        f"Turn {turn}: calling the model (tools enabled)…",
-                        turn=turn,
-                    )
-
-                    response = await self.client.messages.create(
-                        model=self.model,
-                        max_tokens=8192,
-                        system=system_prompt,
-                        tools=tools,
-                        messages=messages,
-                    )
-
-                    for block in response.content:
-                        btype = getattr(block, "type", None)
-                        if btype == "text":
-                            snippet = (getattr(block, "text", "") or "").strip()
-                            if snippet:
-                                preview = snippet[:160] + ("…" if len(snippet) > 160 else "")
-                                self._append_progress(
-                                    progress_events,
-                                    "assistant_text",
-                                    f"Model message: {preview}",
-                                )
-                        elif btype == "tool_use":
-                            name = getattr(block, "name", "?")
-                            inp = getattr(block, "input", {}) or {}
-                            self._append_progress(
-                                progress_events,
-                                "tool_call",
-                                self._tool_input_line(name, inp),
-                                tool=name,
-                            )
-
-                    self._append_progress(
-                        progress_events,
-                        "model_done",
-                        f"Turn {turn} complete — stop_reason={response.stop_reason!r}",
-                        stop_reason=response.stop_reason,
-                    )
-
-                    messages.append({"role": "assistant", "content": response.content})
-
-                    if response.stop_reason == "end_turn":
-                        self._append_progress(
-                            progress_events,
-                            "parse",
-                            "Building lesson steps from library content…",
-                        )
-                        break
-
-                    if response.stop_reason == "tool_use":
-                        tool_results = await self._execute_tool_calls(
-                            response.content, mcp, progress_events
-                        )
-                        messages.append({"role": "user", "content": tool_results})
-                        self._append_progress(
-                            progress_events,
-                            "tools_returned",
-                            f"Sent {len(tool_results)} tool result(s) back to the model",
-                        )
-                        continue
-
-                    self._append_progress(
-                        progress_events,
-                        "warn",
-                        f"Unexpected stop_reason {response.stop_reason!r}; stopping loop",
-                    )
-                    break
-
-                lesson = await self._build_lesson_after_tools(
-                    messages=messages,
-                    system_prompt=system_prompt,
-                    progress_events=progress_events,
-                    on_partial=on_partial,
-                    prefetched_outline=None,
-                    already_emitted_shell=False,
-                )
-
-            steps_n = len(lesson.get("steps", [])) if isinstance(lesson, dict) else 0
-            self._append_progress(
-                progress_events,
-                "complete",
-                f"Lesson ready with {steps_n} step(s).",
-                steps=steps_n,
-            )
-            return lesson
 
     async def generate_lesson_stream(
         self,
@@ -300,6 +168,7 @@ class TeacherAgent:
         proficiency: str,
         student_name: str = "",
         age: int = None,
+        lesson_flow_id: str = "default",
     ) -> AsyncGenerator[dict, None]:
         """
         Streaming version — yields status events during generation.
@@ -310,7 +179,12 @@ class TeacherAgent:
 
         yield {"event": "status", "message": f"Researching '{topic}' content..."}
         lesson = await self.generate_lesson(
-            topic, audience_level, proficiency, student_name, age
+            topic,
+            audience_level,
+            proficiency,
+            student_name,
+            age,
+            lesson_flow_id=lesson_flow_id,
         )
         yield {"event": "status", "message": "Building your personalized lesson..."}
         yield {"event": "lesson_ready", "lesson": lesson}
@@ -323,10 +197,19 @@ class TeacherAgent:
         return lesson
 
     @staticmethod
-    def _try_shell_from_outline(outline: dict) -> Optional[tuple[dict[str, Any], int]]:
+    def _try_shell_from_outline(
+        outline: dict,
+        *,
+        min_steps: int = 8,
+        max_steps: int = 20,
+    ) -> Optional[tuple[dict[str, Any], int]]:
         """Return (shell_lesson_dict, n_steps) or None if outline is unusable."""
         raw_steps = outline.get("steps") if isinstance(outline, dict) else None
-        if not isinstance(raw_steps, list) or len(raw_steps) < 8 or len(raw_steps) > 20:
+        if (
+            not isinstance(raw_steps, list)
+            or len(raw_steps) < min_steps
+            or len(raw_steps) > max_steps
+        ):
             return None
         shell: dict[str, Any] = {
             "lesson_title": outline.get("lesson_title", "Lesson"),
@@ -341,16 +224,18 @@ class TeacherAgent:
         for i, sob in enumerate(raw_steps):
             if not isinstance(sob, dict):
                 continue
-            shell["steps"].append(
-                {
-                    "step_number": int(sob.get("step_number", i + 1)),
-                    "step_type": sob.get("step_type", "content"),
-                    "title": sob.get("title", f"Step {i + 1}"),
-                    "_pending": True,
-                }
-            )
+            srow: dict[str, Any] = {
+                "step_number": int(sob.get("step_number", i + 1)),
+                "step_type": sob.get("step_type", "content"),
+                "title": sob.get("title", f"Step {i + 1}"),
+                "_pending": True,
+            }
+            fid = sob.get("flow_block_id")
+            if isinstance(fid, str) and fid.strip():
+                srow["flow_block_id"] = fid.strip()
+            shell["steps"].append(srow)
         n = len(shell["steps"])
-        if n < 8:
+        if n < min_steps:
             return None
         return shell, n
 
@@ -466,6 +351,7 @@ class TeacherAgent:
             st: str,
             tl: str,
             step_resp_content: list,
+            prev: Optional[dict[str, Any]] = None,
         ) -> dict[str, Any]:
             payload = self._extract_json(step_resp_content)
             step_obj = None
@@ -485,7 +371,7 @@ class TeacherAgent:
                     "title": tl,
                     "content": "This step could not be generated. Please refresh or start a new lesson.",
                 }
-            return {**step_obj, "_pending": False}
+            return _reapply_flow_block_id_from_shell({**step_obj, "_pending": False}, prev)
 
         sn0 = shell["steps"][0]["step_number"]
         st0 = shell["steps"][0]["step_type"]
@@ -508,7 +394,8 @@ class TeacherAgent:
             system=system_prompt,
             messages=[{"role": "user", "content": u0}],
         )
-        shell["steps"][0] = _finalize_step(0, sn0, st0, tl0, r0.content)
+        prev0 = shell["steps"][0]
+        shell["steps"][0] = _finalize_step(0, sn0, st0, tl0, r0.content, prev0)
         await self._emit_partial(on_partial, shell, 1, n)
         self._append_progress(
             progress_events,
@@ -536,6 +423,7 @@ class TeacherAgent:
             sn = shell["steps"][i]["step_number"]
             st = shell["steps"][i]["step_type"]
             tl = shell["steps"][i]["title"]
+            prev = shell["steps"][i]
             ki = self._library_kind_for_step_type(st)
             ui = step_expansion_with_library_user(
                 outline_json,
@@ -545,28 +433,32 @@ class TeacherAgent:
                 st,
                 tl,
             )
-            try:
-                async with _parallel_sem:
-                    ri = await self.client.messages.create(
-                        model=self.model,
-                        max_tokens=8192,
-                        system=system_prompt,
-                        messages=[{"role": "user", "content": ui}],
+            for attempt in range(2):
+                try:
+                    async with _parallel_sem:
+                        ri = await self.client.messages.create(
+                            model=self.model,
+                            max_tokens=8192,
+                            system=system_prompt,
+                            messages=[{"role": "user", "content": ui}],
+                        )
+                    return i, _finalize_step(i, sn, st, tl, ri.content, prev)
+                except BaseException as ex:
+                    if attempt == 0:
+                        self._append_progress(
+                            progress_events,
+                            "warn",
+                            f"Step {i + 1} expansion failed, retrying once: {ex!r}",
+                        )
+                        await asyncio.sleep(0.75)
+                        continue
+                    self._append_progress(
+                        progress_events,
+                        "warn",
+                        f"Step {i + 1} expansion failed: {ex!r}",
                     )
-                return i, _finalize_step(i, sn, st, tl, ri.content)
-            except BaseException as ex:
-                self._append_progress(
-                    progress_events,
-                    "warn",
-                    f"Step {i + 1} expansion failed: {ex!r}",
-                )
-                return i, {
-                    "step_number": sn,
-                    "step_type": st,
-                    "title": tl,
-                    "content": "This step could not be generated. Please refresh or start a new lesson.",
-                    "_pending": False,
-                }
+                    return i, _expansion_error_step(sn, st, tl, prev)
+            return i, _expansion_error_step(sn, st, tl, prev)
 
         batch_start = 1
         while batch_start < n:
@@ -600,6 +492,9 @@ class TeacherAgent:
         on_partial: Optional[Callable[[dict, int, int], Any]],
         prefetched_outline: Optional[dict[str, Any]] = None,
         already_emitted_shell: bool = False,
+        *,
+        outline_min_steps: int = 8,
+        outline_max_steps: int = 20,
     ) -> dict:
         shell: dict[str, Any]
         n: int
@@ -607,7 +502,11 @@ class TeacherAgent:
 
         use_prefetch = False
         if prefetched_outline is not None:
-            built = self._try_shell_from_outline(prefetched_outline)
+            built = self._try_shell_from_outline(
+                prefetched_outline,
+                min_steps=outline_min_steps,
+                max_steps=outline_max_steps,
+            )
             if built is not None:
                 shell, n = built
                 base_messages = copy.deepcopy(messages)
@@ -634,8 +533,8 @@ class TeacherAgent:
             if (
                 not isinstance(outline, dict)
                 or not isinstance(raw_steps, list)
-                or len(raw_steps) < 8
-                or len(raw_steps) > 20
+                or len(raw_steps) < outline_min_steps
+                or len(raw_steps) > outline_max_steps
             ):
                 return await self._fallback_full_lesson_json(
                     messages,
@@ -645,7 +544,11 @@ class TeacherAgent:
                     "Outline missing or invalid step count — falling back to one-shot full lesson JSON.",
                 )
 
-            built = self._try_shell_from_outline(outline)
+            built = self._try_shell_from_outline(
+                outline,
+                min_steps=outline_min_steps,
+                max_steps=outline_max_steps,
+            )
             if built is None:
                 return await self._fallback_full_lesson_json(
                     messages,
@@ -672,6 +575,7 @@ class TeacherAgent:
             st: str,
             tl: str,
             step_resp_content: list,
+            prev: Optional[dict[str, Any]] = None,
         ) -> dict[str, Any]:
             payload = self._extract_json(step_resp_content)
             step_obj = None
@@ -691,7 +595,7 @@ class TeacherAgent:
                     "title": tl,
                     "content": "This step could not be generated. Please refresh or start a new lesson.",
                 }
-            return {**step_obj, "_pending": False}
+            return _reapply_flow_block_id_from_shell({**step_obj, "_pending": False}, prev)
 
         # Step 1 first so the first publish has one full step (sidebar + readable intro).
         sn0 = shell["steps"][0]["step_number"]
@@ -706,7 +610,8 @@ class TeacherAgent:
             system=system_prompt,
             messages=m0,
         )
-        shell["steps"][0] = _finalize_step(0, sn0, st0, tl0, r0.content)
+        prev0 = shell["steps"][0]
+        shell["steps"][0] = _finalize_step(0, sn0, st0, tl0, r0.content, prev0)
         await self._emit_partial(on_partial, shell, 1, n)
         self._append_progress(
             progress_events,
@@ -725,31 +630,36 @@ class TeacherAgent:
             sn = shell["steps"][i]["step_number"]
             st = shell["steps"][i]["step_type"]
             tl = shell["steps"][i]["title"]
+            prev = shell["steps"][i]
             mi = base_messages + [
                 {"role": "user", "content": lesson_expand_step_phase_user(sn, st, tl)}
             ]
-            try:
-                async with _parallel_sem:
-                    ri = await self.client.messages.create(
-                        model=self.model,
-                        max_tokens=8192,
-                        system=system_prompt,
-                        messages=mi,
+            for attempt in range(2):
+                try:
+                    async with _parallel_sem:
+                        ri = await self.client.messages.create(
+                            model=self.model,
+                            max_tokens=8192,
+                            system=system_prompt,
+                            messages=mi,
+                        )
+                    return i, _finalize_step(i, sn, st, tl, ri.content, prev)
+                except BaseException as ex:
+                    if attempt == 0:
+                        self._append_progress(
+                            progress_events,
+                            "warn",
+                            f"Step {i + 1} expansion failed, retrying once: {ex!r}",
+                        )
+                        await asyncio.sleep(0.75)
+                        continue
+                    self._append_progress(
+                        progress_events,
+                        "warn",
+                        f"Step {i + 1} expansion failed: {ex!r}",
                     )
-                return i, _finalize_step(i, sn, st, tl, ri.content)
-            except BaseException as ex:
-                self._append_progress(
-                    progress_events,
-                    "warn",
-                    f"Step {i + 1} expansion failed: {ex!r}",
-                )
-                return i, {
-                    "step_number": sn,
-                    "step_type": st,
-                    "title": tl,
-                    "content": "This step could not be generated. Please refresh or start a new lesson.",
-                    "_pending": False,
-                }
+                    return i, _expansion_error_step(sn, st, tl, prev)
+            return i, _expansion_error_step(sn, st, tl, prev)
 
         batch_start = 1
         while batch_start < n:
