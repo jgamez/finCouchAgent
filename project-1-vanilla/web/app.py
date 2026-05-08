@@ -228,7 +228,7 @@ async def start_lesson(profile: StudentProfile):
 
 @app.get("/api/lesson-status/{session_id}")
 async def lesson_status(session_id: str):
-    """Poll for lesson generation status."""
+    """Lesson generation status (log, phase, partial lesson). Home page fetches on SSE signals, not on a fixed interval."""
     session = sessions.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")

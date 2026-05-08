@@ -146,41 +146,14 @@
   .step-card {
     background: var(--white);
     border-radius: 24px;
-    padding: 2.5rem;
+    padding: 1.5rem 1.75rem 1.75rem;
     box-shadow: var(--shadow);
     min-height: 0;
     display: flex;
     flex-direction: column;
   }
 
-  .step-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .step-badges-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .step-badges-row .step-type-badge {
-    margin-bottom: 0;
-  }
-
-  .flow-block-chip {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--navy);
-    background: #EEF2FF;
-    padding: 0.2rem 0.6rem;
-    border-radius: 8px;
-    letter-spacing: 0.02em;
-  }
-
-  /* MoneyLingo / future flow_block_id — graphic band above step body */
+  /* MoneyLingo / future flow_block_id — print + full illustration row */
   .flow-block-illustration {
     display: flex;
     flex-direction: row;
@@ -196,13 +169,15 @@
   }
   .flow-block-illustration__art {
     flex: 0 0 auto;
-    width: 7.5rem;
-    max-width: 32%;
+    width: 9.25rem;
+    max-width: 36%;
   }
   .flow-block-illustration__art svg {
     display: block;
     width: 100%;
     height: auto;
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
   }
   .flow-block-illustration__text {
     flex: 1 1 auto;
@@ -263,34 +238,6 @@
       align-items: flex-start;
     }
     .flow-block-illustration__art { max-width: 8rem; }
-  }
-
-  .step-type-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 50px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.75rem;
-  }
-
-  .badge-intro { background: #EBF8FF; color: #2B6CB0; }
-  .badge-content { background: #F0FFF4; color: #276749; }
-  .badge-video { background: #FFF5F5; color: #C53030; }
-  .badge-game { background: #FAF5FF; color: #6B46C1; }
-  .badge-reflection { background: #FFFAF0; color: #B7791F; }
-  .badge-quiz,
-  .badge-open_question,
-  .badge-challenge { background: #EBF8FF; color: #2C5282; }
-
-  .step-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.25;
   }
 
   .step-body {
@@ -515,6 +462,114 @@
     flex-shrink: 0;
   }
 
+  /* Topic + lesson title — outside flow banner, stays pinned above scrolling step body */
+  .lesson-course-strip {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 0.7rem 1rem;
+    margin-bottom: 0.65rem;
+    border: 1px solid rgba(13, 27, 42, 0.08);
+    box-shadow: 0 2px 12px rgba(13, 27, 42, 0.06);
+  }
+  .lesson-course-strip__line {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(0.9rem, 2.3vw, 1.12rem);
+    font-weight: 700;
+    color: rgba(13, 27, 42, 0.52);
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    overflow-wrap: break-word;
+  }
+  .lesson-course-strip__emoji {
+    margin-right: 0.2rem;
+    font-size: 1.25em;
+    line-height: 1;
+    vertical-align: -0.06em;
+  }
+  .lesson-course-strip__topic {
+    font-family: 'Fraunces', serif;
+    color: var(--navy);
+    font-weight: 800;
+  }
+  .lesson-course-strip__sep {
+    margin: 0 0.35em;
+    font-weight: 500;
+    opacity: 0.42;
+  }
+  .lesson-course-strip__lesson-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 0.9em;
+    color: rgba(13, 27, 42, 0.48);
+  }
+
+  /* Flow-colored banner: step beat + illustration + step title only */
+  .lesson-unified-banner {
+    border-radius: 16px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(13, 27, 42, 0.08);
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(13, 27, 42, 0.06);
+  }
+  .lesson-unified-banner__row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  .lesson-unified-banner__art {
+    flex: 0 0 auto;
+    width: 5.25rem;
+    max-width: 30%;
+  }
+  .lesson-unified-banner__art svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    shape-rendering: geometricPrecision;
+    text-rendering: geometricPrecision;
+  }
+  .lesson-unified-banner__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .lesson-unified-banner__flow-label {
+    font-family: 'Fraunces', serif;
+    font-size: 0.94rem;
+    font-weight: 700;
+    color: #0f766e;
+    line-height: 1.25;
+    margin-bottom: 0.2rem;
+  }
+  .lesson-unified-banner__step-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1rem, 2.2vw, 1.22rem);
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1.2;
+    margin: 0;
+    overflow-wrap: break-word;
+  }
+  @media (max-width: 520px) {
+    .lesson-unified-banner__row {
+      align-items: flex-start;
+    }
+    .lesson-unified-banner__art {
+      width: 4.5rem;
+      max-width: 34%;
+    }
+  }
+
   #lesson-container {
     flex: 1 1 auto;
     min-height: 0;
@@ -616,6 +671,11 @@
       display: none !important;
     }
 
+    .lesson-course-strip,
+    .lesson-unified-banner {
+      display: none !important;
+    }
+
     .print-lesson-toast {
       display: none !important;
     }
@@ -643,6 +703,13 @@
       margin: 0 0 1.25rem;
       padding-bottom: 0.75rem;
       border-bottom: 1px solid #ccc;
+    }
+
+    .lesson-print-surface .print-doc-topic {
+      font-size: 11pt;
+      font-weight: 700;
+      margin: -0.5rem 0 1rem;
+      color: #1a202c;
     }
 
     .lesson-print-surface .print-step {
@@ -734,6 +801,8 @@
         Print / Save PDF
       </button>
     </header>
+    <div id="lesson-course-strip" class="lesson-course-strip no-print" hidden></div>
+    <div id="lesson-unified-banner" class="no-print" hidden></div>
     <div id="lesson-container">
       <div class="step-card">
         <div class="lesson-loading">
@@ -760,6 +829,58 @@ let lessonEventSource = null;
 let sseApplyChain = Promise.resolve();
 /** Set when lesson API returns irrecoverable errors so we do not keep reconnecting. */
 let lessonFetchAborted = false;
+
+/** Preset topics — values match home form `select#topic` options. */
+const TOPIC_HERO_PRESETS = {
+  budgeting: { mod: 'lesson-topic-hero--budgeting', emoji: '💸', label: 'Budgeting & Money Management' },
+  saving: { mod: 'lesson-topic-hero--saving', emoji: '🏦', label: 'Saving & Emergency Funds' },
+  investing: { mod: 'lesson-topic-hero--investing', emoji: '📈', label: 'Investing & the Stock Market' },
+  credit: { mod: 'lesson-topic-hero--credit', emoji: '💳', label: 'Credit Scores & Borrowing' },
+  'compound interest': { mod: 'lesson-topic-hero--compound', emoji: '📊', label: 'Compound Interest' },
+  taxes: { mod: 'lesson-topic-hero--taxes', emoji: '🧾', label: 'Taxes & Filing' },
+  insurance: { mod: 'lesson-topic-hero--insurance', emoji: '🛡️', label: 'Insurance Basics' },
+  'student loans': { mod: 'lesson-topic-hero--loans', emoji: '🎓', label: 'Student Loans & Financial Aid' },
+  entrepreneurship: { mod: 'lesson-topic-hero--business', emoji: '🚀', label: 'Entrepreneurship & Side Hustles' },
+  cryptocurrency: { mod: 'lesson-topic-hero--crypto', emoji: '⛓️', label: 'Cryptocurrency & Digital Assets' },
+};
+
+function topicHeroFromKeywords(raw) {
+  const display = String(raw || '').replace(/\s+/g, ' ').trim() || 'Personal finance';
+  const s = display.toLowerCase();
+  if (/budget|spend|cash flow|money management|envelope/.test(s))
+    return { mod: 'lesson-topic-hero--budgeting', emoji: '💸', label: display };
+  if (/save|emergency fund|nest egg|rainy/.test(s))
+    return { mod: 'lesson-topic-hero--saving', emoji: '🏦', label: display };
+  if (/invest|stock|portfolio|etf|mutual fund|401k|ira\b|market/.test(s))
+    return { mod: 'lesson-topic-hero--investing', emoji: '📈', label: display };
+  if (/credit|borrow|loan|fico|debt card|apr/.test(s))
+    return { mod: 'lesson-topic-hero--credit', emoji: '💳', label: display };
+  if (/compound|interest rate|double your/.test(s))
+    return { mod: 'lesson-topic-hero--compound', emoji: '📊', label: display };
+  if (/tax|irs|filing|withhold|deduct/.test(s))
+    return { mod: 'lesson-topic-hero--taxes', emoji: '🧾', label: display };
+  if (/insur|premium|deductible|coverage/.test(s))
+    return { mod: 'lesson-topic-hero--insurance', emoji: '🛡️', label: display };
+  if (/student loan|fafs|financial aid|tuition/.test(s))
+    return { mod: 'lesson-topic-hero--loans', emoji: '🎓', label: display };
+  if (/business|entrepreneur|side hustle|startup|gig/.test(s))
+    return { mod: 'lesson-topic-hero--business', emoji: '🚀', label: display };
+  if (/crypto|bitcoin|blockchain|nft|digital asset/.test(s))
+    return { mod: 'lesson-topic-hero--crypto', emoji: '⛓️', label: display };
+  if (/hsa|health savings|retire|401k|403b|\bira\b|roth|pension/.test(s))
+    return { mod: 'lesson-topic-hero--investing', emoji: '🏖️', label: display };
+  return { mod: 'lesson-topic-hero--spark', emoji: '✨', label: display };
+}
+
+function resolveTopicHero(les) {
+  const t = les && les.topic != null ? String(les.topic).trim() : '';
+  if (!t) {
+    return { mod: 'lesson-topic-hero--spark', emoji: '✨', label: 'Your financial lesson' };
+  }
+  const preset = TOPIC_HERO_PRESETS[t.toLowerCase()];
+  if (preset) return { ...preset };
+  return topicHeroFromKeywords(t);
+}
 
 function stopLessonStream() {
   if (lessonEventSource) {
@@ -793,18 +914,30 @@ function showSessionLostUi(message) {
   if (fill) fill.style.width = '0%';
   const lab = document.getElementById('progress-label');
   if (lab) lab.textContent = '';
+  const ub = document.getElementById('lesson-unified-banner');
+  if (ub) {
+    ub.setAttribute('hidden', '');
+    ub.innerHTML = '';
+    ub.className = 'no-print';
+    ub.removeAttribute('aria-label');
+  }
+  const cs = document.getElementById('lesson-course-strip');
+  if (cs) {
+    cs.setAttribute('hidden', '');
+    cs.innerHTML = '';
+    cs.removeAttribute('aria-label');
+  }
 }
 
-const BADGE_CLASSES = {
-  intro: 'badge-intro',
-  content: 'badge-content',
-  video: 'badge-video',
-  game: 'badge-game',
-  reflection: 'badge-reflection',
-  quiz: 'badge-quiz',
-  open_question: 'badge-open_question',
-  challenge: 'badge-challenge',
-};
+function hideLessonUnifiedBanner() {
+  const ub = document.getElementById('lesson-unified-banner');
+  if (ub) {
+    ub.setAttribute('hidden', '');
+    ub.innerHTML = '';
+    ub.className = 'no-print';
+    ub.removeAttribute('aria-label');
+  }
+}
 
 const TYPE_LABELS = {
   intro: '👋 Intro',
@@ -828,12 +961,6 @@ const FLOW_BLOCK_LABELS = {
   simulation: 'MoneyLingo · Simulation',
   irl: 'MoneyLingo · IRL',
 };
-
-function flowBlockChipHtml(step) {
-  const id = step && step.flow_block_id;
-  if (!id || !FLOW_BLOCK_LABELS[id]) return '';
-  return `<span class="flow-block-chip">${escapeHtml(FLOW_BLOCK_LABELS[id])}</span>`;
-}
 
 /**
  * Kicker + label + CSS modifier + inline SVG for each `flow_block_id` (MoneyLingo v1 and future
@@ -883,16 +1010,28 @@ const FLOW_BLOCK_ILLUSTRATION_SPECS = {
 };
 
 const FLOW_BLOCK_ILLUSTRATION_SVGS = {
-  hook: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="18" width="64" height="40" rx="8" fill="#FFFBF5" stroke="#D69E2E" stroke-width="2"/><text x="40" y="48" text-anchor="middle" font-size="20" font-family="system-ui,Georgia,serif" font-weight="800" fill="#1A365D">?</text><path d="M64 32l20 8v18l-20-8" fill="#F6E4B8" stroke="#B7791F" stroke-width="1.5"/><circle cx="92" cy="22" r="3" fill="#D69E2E"/><circle cx="102" cy="14" r="2" fill="#9AE6B4"/></svg>`,
-  context_video: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="112" height="70" rx="8" fill="#0f172A"/><rect x="10" y="14" width="100" height="58" rx="4" fill="#1E293B"/><circle cx="60" cy="43" r="22" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.2"/><path d="M50 32 L50 55 L75 44 Z" fill="#D69E2E"/></svg>`,
-  core_lesson: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="12" width="32" height="24" rx="2" fill="#C6E6C0" stroke="#276749" stroke-width="1.5" transform="rotate(-8 36 24)"/><rect x="32" y="20" width="32" height="24" rx="2" fill="#9AE6B4" stroke="#276749" stroke-width="1.5"/><rect x="48" y="32" width="32" height="24" rx="2" fill="#E6FFFA" stroke="#0D9480" stroke-width="1.5" transform="rotate(6 64 44)"/><line x1="10" y1="78" x2="110" y2="78" stroke="#CBD5E0" stroke-width="1" stroke-dasharray="3 3"/></svg>`,
-  aha_moment: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M10 60 Q30 20 50 50 T90 30 L90 60 L10 60 Z" fill="#EEF2FF" stroke="#4C51BF" stroke-width="1.5"/><path d="M10 60 L20 50 L32 55 L50 32 L64 40 L80 20 L90 30" fill="none" stroke="#D69E2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="80" cy="20" r="5" fill="#D69E2E"/><text x="78" y="24" font-size="8" fill="white" font-weight="800">$</text></svg>`,
-  word_wallet: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="8" width="50" height="32" rx="4" fill="#E0E7FF" stroke="#4C51BF" stroke-width="1.2" transform="rotate(6 75 24)"/><rect x="32" y="20" width="50" height="32" rx="4" fill="#F0F9FF" stroke="#2B6CB0" stroke-width="1.2"/><rect x="14" y="32" width="50" height="32" rx="4" fill="#FFFBF0" stroke="#B7791F" stroke-width="1.2" transform="rotate(-6 39 48)"/><text x="32" y="50" font-size="8" fill="#1A365D" font-weight="700">$</text><text x="52" y="42" font-size="7" fill="#2B6CB0" font-weight="600">% APR</text></svg>`,
-  quiz: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="8" width="80" height="64" rx="4" fill="#F8FAFC" stroke="#2B6CB0" stroke-width="2"/><rect x="32" y="20" width="8" height="8" fill="#2B6CB0" rx="1"/><path d="M30 32 L32 35 L40 30" fill="none" stroke="#38A169" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="32" y="40" width="8" height="8" fill="#BEE3F8" rx="1" stroke="#2B6CB0"/><rect x="32" y="60" width="8" height="8" fill="#BEE3F8" rx="1" stroke="#2B6CB0"/><line x1="50" y1="24" x2="88" y2="24" stroke="#A0AEC0" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="44" x2="88" y2="44" stroke="#A0AEC0" stroke-width="2" stroke-linecap="round"/></svg>`,
-  simulation: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="32" width="80" height="32" rx="6" fill="#1A1A2E" stroke="#6B46C1" stroke-width="1.5"/><rect x="28" y="38" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="40" y="50" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="52" y="44" width="6" height="4" fill="#4FD1C5" rx="1"/><rect x="24" y="12" width="4" height="4" fill="#6B46C1" transform="rotate(-15 26 14)"/><rect x="32" y="8" width="4" height="4" fill="#6B46C1" transform="rotate(8 34 10)"/><path d="M10 20 L20 20 L20 10" fill="none" stroke="#6B46C1" stroke-width="1" opacity=".6"/></svg>`,
-  irl: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M8 64 Q40 20 100 32 L100 64 Z" fill="#C6E6C0" opacity=".45"/><path d="M20 50 Q50 32 80 50" fill="none" stroke="#2F855A" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="50" cy="32" r="4" fill="#C53030"/><rect x="46" y="28" width="8" height="10" fill="#1A202C" rx="1" transform="rotate(8 50 32)"/></svg>`,
-  generic: `<svg viewBox="0 0 120 90" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><rect x="24" y="20" width="72" height="50" rx="6" fill="#F7FAFC" stroke="#1A365D" stroke-width="1.5" stroke-dasharray="4 2"/><rect x="36" y="32" width="16" height="4" fill="#D69E2E" opacity=".4"/><rect x="36" y="42" width="48" height="3" fill="#CBD5E0"/><rect x="36" y="50" width="40" height="3" fill="#CBD5E0"/></svg>`,
+  hook: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbh-bub" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFFBF5"/><stop offset="100%" stop-color="#FEF3C7"/></linearGradient><linearGradient id="fbh-fold" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#F6E4B8"/><stop offset="100%" stop-color="#D69E2E"/></linearGradient></defs><path d="M18 38 Q18 22 34 20 L78 20 Q96 22 96 38 L96 52 Q96 64 82 66 L52 66 L42 78 L38 66 L34 66 Q18 64 18 52 Z" fill="url(#fbh-bub)" stroke="#B7791F" stroke-width="1.75"/><path d="M96 28 L112 22 L108 40 Z" fill="url(#fbh-fold)" stroke="#B7791F" stroke-width="1"/><path d="M44 36 h10 v14 H44 z" fill="#1A365D" opacity=".12"/><path d="M52 42 C52 36 56 32 62 32 C68 32 72 36 72 42 C72 48 68 52 62 52 C56 52 52 48 52 42 Z" fill="none" stroke="#1A365D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 52 L62 60" stroke="#1A365D" stroke-width="2.2" stroke-linecap="round"/><path d="M100 14 l3 6 6 1 -6 3 -1 6 -3 -6 -6 -1 6 -3 z" fill="#D69E2E" opacity=".9"/><path d="M112 8 l2 4 4 0.5 -4 2 -0.5 4 -2 -4 -4 -0.5 4 -2 z" fill="#9AE6B4" opacity=".85"/></svg>`,
+  context_video: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbv-frame" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172A"/></linearGradient><linearGradient id="fbv-play" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#D97706"/></linearGradient><radialGradient id="fbv-glow" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#fff" stop-opacity=".12"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><rect x="10" y="14" width="118" height="72" rx="10" fill="url(#fbv-frame)" stroke="#64748B" stroke-width="1.25"/><rect x="16" y="20" width="106" height="60" rx="6" fill="#1e293b"/><ellipse cx="70" cy="50" rx="48" ry="26" fill="url(#fbv-glow)"/><circle cx="70" cy="50" r="26" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/><path d="M58 38 L58 64 L86 51 Z" fill="url(#fbv-play)" stroke="#B45309" stroke-width=".75"/><rect x="22" y="24" width="3" height="4" rx=".5" fill="#94a3b8" opacity=".5"/><rect x="22" y="31" width="3" height="4" rx=".5" fill="#94a3b8" opacity=".5"/><rect x="22" y="38" width="3" height="4" rx=".5" fill="#94a3b8" opacity=".5"/><path d="M124 26 L132 26 M128 22 L128 30" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>`,
+  core_lesson: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbc-l" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#D1FAE5"/><stop offset="100%" stop-color="#6EE7B7"/></linearGradient><linearGradient id="fbc-r" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="#ECFDF5"/><stop offset="100%" stop-color="#A7F3D0"/></linearGradient><linearGradient id="fbc-spine" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#065F46"/></linearGradient></defs><path d="M28 24 Q28 18 36 18 L66 18 L66 78 L36 78 Q28 78 28 72 Z" fill="url(#fbc-l)" stroke="#276749" stroke-width="1.4"/><path d="M112 24 Q112 18 104 18 L74 18 L74 78 L104 78 Q112 78 112 72 Z" fill="url(#fbc-r)" stroke="#276749" stroke-width="1.4"/><rect x="66" y="18" width="8" height="60" fill="url(#fbc-spine)"/><path d="M40 32h20M40 42h24M40 52h18" stroke="#065F46" stroke-width="1.5" stroke-linecap="round" opacity=".35"/><path d="M80 32h20M80 42h24M80 52h18" stroke="#065F46" stroke-width="1.5" stroke-linecap="round" opacity=".35"/><path d="M70 8 L74 18 L66 18 Z" fill="#D69E2E" stroke="#B45309" stroke-width=".6"/></svg>`,
+  aha_moment: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fba-bar1" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#6366F1"/><stop offset="100%" stop-color="#A5B4FC"/></linearGradient><linearGradient id="fba-bar3" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient><radialGradient id="fba-coin" cx="35%" cy="35%" r="60%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="100%" stop-color="#D97706"/></radialGradient></defs><rect x="24" y="58" width="16" height="28" rx="3" fill="url(#fba-bar1)" stroke="#4338CA" stroke-width="1"/><rect x="48" y="42" width="16" height="44" rx="3" fill="#818CF8" stroke="#4338CA" stroke-width="1"/><rect x="72" y="26" width="16" height="60" rx="3" fill="url(#fba-bar3)" stroke="#B45309" stroke-width="1"/><circle cx="100" cy="30" r="14" fill="url(#fba-coin)" stroke="#B45309" stroke-width="1.2"/><text x="100" y="35" text-anchor="middle" font-size="13" font-weight="800" font-family="system-ui,sans-serif" fill="#78350F">$</text><path d="M8 88 L132 88" stroke="#CBD5E0" stroke-width="1" opacity=".6"/></svg>`,
+  word_wallet: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbw-leather" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1E3A5F"/><stop offset="100%" stop-color="#0F172A"/></linearGradient><linearGradient id="fbw-card" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E0E7FF"/><stop offset="100%" stop-color="#C7D2FE"/></linearGradient></defs><path d="M24 38 Q24 28 36 26 L88 26 Q104 28 104 38 L104 70 Q104 80 92 82 L36 82 Q24 80 24 70 Z" fill="url(#fbw-leather)" stroke="#334155" stroke-width="1.5"/><ellipse cx="64" cy="30" rx="28" ry="8" fill="#334155" opacity=".35"/><rect x="32" y="44" width="64" height="3" rx="1" fill="#D69E2E" opacity=".5"/><rect x="48" y="18" width="52" height="34" rx="4" fill="url(#fbw-card)" stroke="#4C51BF" stroke-width="1.2" transform="rotate(-8 74 35)"/><rect x="38" y="28" width="48" height="30" rx="4" fill="#F0F9FF" stroke="#2B6CB0" stroke-width="1.1" transform="rotate(4 62 43)"/><text x="58" y="48" font-size="9" font-weight="700" fill="#1E3A5F" transform="rotate(-8 58 48)">$ %</text><circle cx="86" cy="62" r="5" fill="#D69E2E" stroke="#B45309" stroke-width=".8"/></svg>`,
+  quiz: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbq-paper" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#E2E8F0"/></linearGradient></defs><rect x="22" y="12" width="96" height="76" rx="8" fill="url(#fbq-paper)" stroke="#2B6CB0" stroke-width="1.6"/><rect x="32" y="24" width="76" height="6" rx="2" fill="#CBD5E0" opacity=".45"/><rect x="32" y="38" width="76" height="6" rx="2" fill="#CBD5E0" opacity=".45"/><rect x="32" y="52" width="56" height="6" rx="2" fill="#CBD5E0" opacity=".45"/><circle cx="36" cy="70" r="9" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.3"/><path d="M32 70 L35 73 L42 65" fill="none" stroke="#15803D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36" cy="27" r="9" fill="#E0E7FF" stroke="#4338CA" stroke-width="1.2"/><path d="M32 27 L40 35 M40 27 L32 35" stroke="#4338CA" stroke-width="1.8" stroke-linecap="round"/><circle cx="36" cy="41" r="9" fill="#FEF9C3" stroke="#CA8A04" stroke-width="1.2"/><path d="M33 41h6" stroke="#A16207" stroke-width="2" stroke-linecap="round"/></svg>`,
+  simulation: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbs-body" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#5B21B6"/><stop offset="50%" stop-color="#4C1D95"/><stop offset="100%" stop-color="#1E1B4B"/></linearGradient><linearGradient id="fbs-pad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#312E81"/><stop offset="100%" stop-color="#1E1B4B"/></linearGradient><linearGradient id="fbs-btn" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#14B8A6"/></linearGradient><linearGradient id="fbs-btn2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F472B6"/><stop offset="100%" stop-color="#DB2777"/></linearGradient></defs><ellipse cx="70" cy="78" rx="42" ry="7" fill="#0f172A" opacity=".14"/><path d="M22 52 C22 34 34 28 48 28 L92 28 C106 28 118 34 118 52 C118 66 108 74 92 74 L48 74 C32 74 22 66 22 52 Z" fill="url(#fbs-body)" stroke="#A78BFA" stroke-width="1.2"/><path d="M14 50 C14 40 22 34 32 34 L36 34 C44 34 50 40 50 50 L50 58 C50 68 42 74 32 74 L28 74 C18 74 14 66 14 58 Z" fill="url(#fbs-body)" stroke="#A78BFA" stroke-width="1.1"/><path d="M126 50 C126 40 118 34 108 34 L104 34 C96 34 90 40 90 50 L90 58 C90 68 98 74 108 74 L112 74 C122 74 126 66 126 58 Z" fill="url(#fbs-body)" stroke="#A78BFA" stroke-width="1.1"/><rect x="52" y="38" width="20" height="14" rx="3" fill="url(#fbs-pad)"/><path d="M58 41 v8 M54 45 h8" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round"/><circle cx="88" cy="44" r="6" fill="url(#fbs-btn)" stroke="#0F766E" stroke-width=".75"/><circle cx="102" cy="38" r="5" fill="url(#fbs-btn2)" stroke="#9D174D" stroke-width=".65"/><ellipse cx="70" cy="34" rx="18" ry="5" fill="#fff" opacity=".1"/></svg>`,
+  irl: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbi-map" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#D1FAE5"/><stop offset="100%" stop-color="#A7F3D0"/></linearGradient><linearGradient id="fbi-pin" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#B91C1C"/></linearGradient></defs><path d="M16 78 L32 28 L108 22 L124 72 Z" fill="url(#fbi-map)" stroke="#2F855A" stroke-width="1.3" opacity=".9"/><path d="M28 62 Q56 38 88 48 T118 40" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="5 4"/><circle cx="72" cy="42" r="16" fill="none" stroke="#F87171" stroke-width="1.5" opacity=".55"/><path d="M72 22 C66 22 62 28 62 36 C62 44 72 58 72 58 S82 44 82 36 C82 28 78 22 72 22 Z" fill="url(#fbi-pin)" stroke="#7F1D1D" stroke-width="1"/><circle cx="72" cy="34" r="5" fill="#fff" opacity=".35"/></svg>`,
+  generic: `<svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="fbg-doc" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#E2E8F0"/></linearGradient></defs><rect x="28" y="18" width="84" height="64" rx="8" fill="url(#fbg-doc)" stroke="#1E3A5F" stroke-width="1.4" stroke-dasharray="5 3"/><rect x="40" y="32" width="52" height="5" rx="2" fill="#CBD5E0"/><rect x="40" y="44" width="60" height="5" rx="2" fill="#CBD5E0"/><rect x="40" y="56" width="44" height="5" rx="2" fill="#CBD5E0"/><circle cx="98" cy="30" r="12" fill="#FEF3C7" stroke="#D69E2E" stroke-width="1.2"/><path d="M94 30 L97 33 L104 26" fill="none" stroke="#B45309" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 };
+
+/** Flow-block art + copy for the unified step banner (live UI only; print still uses full illustration row). */
+function getFlowBlockBannerParts(step) {
+  if (!step || !step.flow_block_id) return null;
+  const id = step.flow_block_id;
+  const spec = FLOW_BLOCK_ILLUSTRATION_SPECS[id];
+  const kicker = spec ? spec.kicker : 'This section';
+  const mod = spec ? spec.mod : 'flow-block-illustration--generic';
+  const svg = FLOW_BLOCK_ILLUSTRATION_SVGS[id] || FLOW_BLOCK_ILLUSTRATION_SVGS.generic;
+  const label = spec ? spec.label : `A focused beat in this lesson: ${_humanizeFlowBlockIdForUi(id)}`;
+  return { kicker, mod, svg, label, aria: `${kicker} — ${label}` };
+}
 
 function _humanizeFlowBlockIdForUi(id) {
   if (!id) return 'Lesson block';
@@ -951,6 +1090,69 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function buildLessonCourseStripHtml() {
+  if (!lesson) return '';
+  const theme = resolveTopicHero(lesson);
+  const lt = (lesson.lesson_title && String(lesson.lesson_title).trim()) || '';
+  const topicBits = `<span class="lesson-course-strip__emoji" aria-hidden="true">${theme.emoji}</span><span class="lesson-course-strip__topic">${escapeHtml(theme.label)}</span>`;
+  const lessonBits =
+    lt && lt.toLowerCase() !== theme.label.toLowerCase()
+      ? `<span class="lesson-course-strip__sep">·</span><span class="lesson-course-strip__lesson-title">${escapeHtml(lt)}</span>`
+      : '';
+  return `<div class="lesson-course-strip__line">${topicBits}${lessonBits}</div>`;
+}
+
+function updateCourseStrip() {
+  const el = document.getElementById('lesson-course-strip');
+  if (!el) return;
+  if (!lesson) {
+    el.setAttribute('hidden', '');
+    el.innerHTML = '';
+    el.removeAttribute('aria-label');
+    return;
+  }
+  el.innerHTML = buildLessonCourseStripHtml();
+  el.removeAttribute('hidden');
+  const theme = resolveTopicHero(lesson);
+  el.setAttribute('aria-label', `Lesson: ${theme.label}`);
+}
+
+function buildUnifiedLessonBannerHtml(index) {
+  if (!lesson || !lesson.steps[index]) return '';
+  const step = lesson.steps[index];
+  const fb = getFlowBlockBannerParts(step);
+  const mod = fb ? fb.mod : 'flow-block-illustration--generic';
+  const svg = fb ? fb.svg : FLOW_BLOCK_ILLUSTRATION_SVGS.generic;
+  const labelHtml = fb ? escapeHtml(fb.label) : '';
+  const typeHint = String(TYPE_LABELS[step.step_type] || step.step_type || '');
+  const ariaBits = [fb ? fb.aria : typeHint, step.title || ''].filter(Boolean).join('. ');
+  return `
+    <div class="lesson-unified-banner ${mod} no-print" role="region" aria-label="${escapeHtml(ariaBits)}">
+      <div class="lesson-unified-banner__row">
+        <div class="lesson-unified-banner__art" aria-hidden="true">${svg}</div>
+        <div class="lesson-unified-banner__body">
+          ${labelHtml ? `<div class="lesson-unified-banner__flow-label">${labelHtml}</div>` : ''}
+          <h2 class="lesson-unified-banner__step-title">${escapeHtml(step.title || '')}</h2>
+        </div>
+      </div>
+    </div>`;
+}
+
+function updateUnifiedLessonBanner(stepIndex) {
+  const el = document.getElementById('lesson-unified-banner');
+  if (!el) return;
+  if (!lesson || lesson.steps[stepIndex] == null) {
+    el.setAttribute('hidden', '');
+    el.innerHTML = '';
+    el.className = 'no-print';
+    el.removeAttribute('aria-label');
+    return;
+  }
+  el.className = 'no-print';
+  el.innerHTML = buildUnifiedLessonBannerHtml(stepIndex);
+  el.removeAttribute('hidden');
 }
 
 /** Normalize watch/embed/shorts URLs to a privacy-friendly embed src (real YouTube IDs only). */
@@ -1146,13 +1348,18 @@ function printStepBodyForPdf(step) {
 function buildLessonPrintHtml() {
   if (!lesson || !lesson.steps) return '';
   const title = escapeHtml(lesson.lesson_title || 'Lesson');
+  const th = resolveTopicHero(lesson);
+  const topicPrint =
+    th.label && th.label !== 'Your financial lesson'
+      ? `<p class="print-doc-topic"><strong>Topic:</strong> ${escapeHtml(th.label)}</p>`
+      : '';
   const dateStr = new Date().toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
   const parts = [
-    `<div class="print-doc"><h1 class="print-doc-title">${title}</h1><p class="print-doc-meta">FinCoach · ${escapeHtml(dateStr)}</p>`,
+    `<div class="print-doc"><h1 class="print-doc-title">${title}</h1><p class="print-doc-meta">FinCoach · ${escapeHtml(dateStr)}</p>${topicPrint}`,
   ];
   lesson.steps.forEach((step, idx) => {
     if (step._pending) return;
@@ -1193,6 +1400,7 @@ function stepBodySignature(lesson, index) {
     title: step.title ?? '',
     step_type: step.step_type ?? '',
     content: step.content ?? '',
+    flow_block_id: step.flow_block_id ?? null,
   };
   if (step.video) {
     v.video = {
@@ -1415,11 +1623,8 @@ function renderStep(index) {
 function renderStepMain(index) {
   const step = lesson.steps[index];
   const container = document.getElementById('lesson-container');
-
-  const badgeClass = BADGE_CLASSES[step.step_type] || 'badge-content';
-  const typeLabel = TYPE_LABELS[step.step_type] || step.step_type;
-  const blockChip = flowBlockChipHtml(step);
-  const flowBlockVisual = buildFlowBlockIllustrationHtml(step);
+  updateCourseStrip();
+  updateUnifiedLessonBanner(index);
 
   let bodyHtml = '';
 
@@ -1478,13 +1683,6 @@ function renderStepMain(index) {
 
   container.innerHTML = `
     <div class="step-card">
-      <div class="step-header">
-        <div class="step-badges-row">
-          <span class="step-type-badge ${badgeClass}">${typeLabel}</span>${blockChip}
-        </div>
-        <h2 class="step-title">${escapeHtml(step.title)}</h2>
-      </div>
-      ${flowBlockVisual}
       <div class="step-body-wrapper">${bodyHtml}</div>
       <div class="step-nav-buttons">
         ${buildStepFooterButtonsHtml(index)}
@@ -1584,6 +1782,7 @@ async function submitAssessment() {
     }
     if (!res.ok) {
       const msg = formatSubmitError(result.detail);
+      hideLessonUnifiedBanner();
       const container = document.getElementById('lesson-container');
       container.innerHTML = `
         <div class="step-card results-card">
@@ -1597,6 +1796,7 @@ async function submitAssessment() {
     }
     renderResults(result);
   } catch (e) {
+    hideLessonUnifiedBanner();
     const container = document.getElementById('lesson-container');
     container.innerHTML = `
       <div class="step-card results-card">
@@ -1610,6 +1810,7 @@ async function submitAssessment() {
 }
 
 function renderResults(result) {
+  hideLessonUnifiedBanner();
   const reviewTopics = normalizeReviewTopics(result.review_topics);
   const gradeLetter =
     result.grade != null && result.grade !== '' ? String(result.grade) : '—';

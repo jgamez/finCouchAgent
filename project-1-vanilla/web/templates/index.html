@@ -485,8 +485,7 @@
       const data = await res.json();
       const sessionId = data.session_id;
 
-      // Poll for completion
-      await pollForLesson(sessionId);
+      await waitForLessonReadyViaSse(sessionId);
 
     } catch (e) {
       document.getElementById('loading').classList.remove('active');
@@ -546,38 +545,137 @@
     el.scrollTop = el.scrollHeight;
   }
 
-  async function pollForLesson(sessionId) {
-    for (let attempts = 0; attempts < 90; attempts++) {
-      const res = await fetch(`/api/lesson-status/${sessionId}`);
-      const data = await res.json();
+  let homeLessonEventSource = null;
 
-      const log = data.generation_log || [];
-      renderThinkingLog(log);
-      if (log.length) {
-        document.getElementById('loading-status').textContent = humanizeLogEntry(log[log.length - 1]);
-      } else if (data.phase) {
-        document.getElementById('loading-status').textContent = data.phase;
-      }
-
-      // Open as soon as we have an outline (titles + placeholders), not only after step 1 is fully written
-      const canOpenLesson =
-        (data.status === 'ready' || data.status === 'partial') &&
-        data.total_steps >= 1 &&
-        data.lesson != null;
-      if (canOpenLesson) {
-        window.location.href = `/lesson/${sessionId}`;
-        return;
-      }
-      if (data.status === 'error') {
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('error-msg').textContent = 'Error generating lesson: ' + data.error;
-        return;
-      }
-
-      await new Promise(r => setTimeout(r, 1200));
+  function closeHomeLessonStream() {
+    if (homeLessonEventSource) {
+      homeLessonEventSource.close();
+      homeLessonEventSource = null;
     }
-    document.getElementById('loading').classList.remove('active');
-    document.getElementById('error-msg').textContent = 'Lesson is taking longer than expected. Please try again.';
+  }
+
+  async function fetchLessonStatusPayload(sessionId) {
+    const res = await fetch(`/api/lesson-status/${sessionId}`);
+    if (res.status === 404) {
+      return { notFound: true, data: null };
+    }
+    if (!res.ok) {
+      return { notFound: false, data: null, httpError: true };
+    }
+    const data = await res.json().catch(() => null);
+    return { notFound: false, data };
+  }
+
+  /**
+   * Apply /api/lesson-status JSON to the loading UI. Returns true if navigation or terminal error handled.
+   */
+  function applyLessonStatusAndMaybeNavigate(sessionId, data) {
+    if (!data) return false;
+    const log = data.generation_log || [];
+    renderThinkingLog(log);
+    if (log.length) {
+      document.getElementById('loading-status').textContent = humanizeLogEntry(log[log.length - 1]);
+    } else if (data.phase) {
+      document.getElementById('loading-status').textContent = data.phase;
+    }
+
+    const canOpenLesson =
+      (data.status === 'ready' || data.status === 'partial') &&
+      data.total_steps >= 1 &&
+      data.lesson != null;
+    if (canOpenLesson) {
+      closeHomeLessonStream();
+      window.location.href = `/lesson/${sessionId}`;
+      return true;
+    }
+    if (data.status === 'error') {
+      closeHomeLessonStream();
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('error-msg').textContent = 'Error generating lesson: ' + (data.error || 'Unknown error');
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Wait on Server-Sent Events (same stream as the lesson page) and only then GET /api/lesson-status,
+   * instead of polling every 1.2s. Heartbeats keep the thinking panel moving during long tool phases.
+   */
+  async function waitForLessonReadyViaSse(sessionId) {
+    const errEl = document.getElementById('error-msg');
+    let statusPullBusy = false;
+    let finished = false;
+
+    const finishTimeout = () => {
+      if (finished) return;
+      finished = true;
+      closeHomeLessonStream();
+      document.getElementById('loading').classList.remove('active');
+      errEl.textContent = 'Lesson is taking longer than expected. Please try again.';
+    };
+
+    const safetyId = setTimeout(finishTimeout, 180000);
+
+    const stopAll = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(safetyId);
+      closeHomeLessonStream();
+    };
+
+    const pullStatusOnce = async () => {
+      if (statusPullBusy || finished) return;
+      statusPullBusy = true;
+      try {
+        const r = await fetchLessonStatusPayload(sessionId);
+        if (r.notFound) {
+          stopAll();
+          document.getElementById('loading').classList.remove('active');
+          errEl.textContent = 'Session not found. If the server restarted, start again from home.';
+          return;
+        }
+        if (r.httpError) return;
+        if (applyLessonStatusAndMaybeNavigate(sessionId, r.data)) {
+          clearTimeout(safetyId);
+          finished = true;
+          closeHomeLessonStream();
+        }
+      } finally {
+        statusPullBusy = false;
+      }
+    };
+
+    const es = new EventSource(`/api/lesson/${sessionId}/events`);
+    homeLessonEventSource = es;
+
+    es.addEventListener('message', (ev) => {
+      if (finished) return;
+      let msg;
+      try {
+        msg = JSON.parse(ev.data);
+      } catch (_) {
+        return;
+      }
+      if (msg.type === 'gone') {
+        stopAll();
+        document.getElementById('loading').classList.remove('active');
+        errEl.textContent = 'Session ended. Please try again from home.';
+        return;
+      }
+      if (msg.type === 'error') {
+        stopAll();
+        document.getElementById('loading').classList.remove('active');
+        errEl.textContent = msg.message || 'Lesson generation failed.';
+        return;
+      }
+      if (msg.type === 'hello' || msg.type === 'update' || msg.type === 'heartbeat') {
+        void pullStatusOnce();
+      }
+    });
+
+    es.addEventListener('error', () => {
+      if (finished) return;
+    });
   }
 </script>
 {% endblock %}
